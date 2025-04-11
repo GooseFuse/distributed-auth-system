@@ -141,7 +141,7 @@ run_demo.bat
 The demo scripts:
 1. Build the distributed auth system and client
 2. Start Redis if it's not already running
-3. Create data directories for each node
+3. Create a nodes directory with subdirectories for each node
 4. Start three nodes on different ports
 5. Demonstrate client operations (store, get, authenticate)
 6. Keep the nodes running until you press Ctrl+C (or any key on Windows)
@@ -205,6 +205,7 @@ isValid := securityManager.VerifySignature(data, signature, publicKey)
 - `client/`: Client application for interacting with the system
 - `run_demo.sh` and `run_demo.bat`: Demo scripts for Linux/macOS and Windows
 - `.gitignore`: Specifies files and directories to be excluded from version control
+- `LICENSE`: MIT license file
 
 ### Adding New Features
 
@@ -222,7 +223,8 @@ The project includes a `.gitignore` file that excludes the following from versio
 - Dependency directories
 - IDE-specific files
 - OS-specific files
-- Data directories and database files
+- Data directories and nodes directory (data/, nodes/)
+- Database files (*.db, *.log, *.ldb)
 - Redis dumps
 - Certificate files
 - Checkpoint files
@@ -230,6 +232,7 @@ The project includes a `.gitignore` file that excludes the following from versio
 - Environment variable files
 
 This ensures that only the source code and necessary configuration files are committed to the repository.
+
 
 ## License
 

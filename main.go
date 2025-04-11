@@ -33,11 +33,18 @@ func main() {
 	useTLS := flag.Bool("tls", false, "Use TLS")
 	flag.Parse()
 
-	// Create the data directory if it doesn't exist
-	dataDir := filepath.Join(*dbPath, *nodeID)
-	err := os.MkdirAll(dataDir, 0755)
+	// Create the nodes directory if it doesn't exist
+	nodesDir := filepath.Join(*dbPath, "nodes")
+	err := os.MkdirAll(nodesDir, 0755)
 	if err != nil {
-		log.Fatalf("Failed to create data directory: %v", err)
+		log.Fatalf("Failed to create nodes directory: %v", err)
+	}
+
+	// Create the node-specific directory
+	dataDir := filepath.Join(nodesDir, *nodeID)
+	err = os.MkdirAll(dataDir, 0755)
+	if err != nil {
+		log.Fatalf("Failed to create node directory: %v", err)
 	}
 
 	// Initialize configuration

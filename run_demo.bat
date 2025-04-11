@@ -28,10 +28,11 @@ if %ERRORLEVEL% neq 0 (
     timeout /t 2 > nul
 )
 
-REM Create data directories
-if not exist data\node1 mkdir data\node1
-if not exist data\node2 mkdir data\node2
-if not exist data\node3 mkdir data\node3
+REM Create nodes directory
+if not exist data\nodes mkdir data\nodes
+if not exist data\nodes\node1 mkdir data\nodes\node1
+if not exist data\nodes\node2 mkdir data\nodes\node2
+if not exist data\nodes\node3 mkdir data\nodes\node3
 
 REM Start three nodes in the background
 echo Starting node 1...

@@ -33,8 +33,8 @@ if [ $? -ne 0 ]; then
     sleep 2
 fi
 
-# Create data directories
-mkdir -p data/node1 data/node2 data/node3
+# Create nodes directory
+mkdir -p data/nodes/node1 data/nodes/node2 data/nodes/node3
 
 # Start three nodes in the background
 echo "Starting node 1..."
