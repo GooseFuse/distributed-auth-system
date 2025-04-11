@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v6.30.2
-// source: distributed-auth-system/transaction.proto
+// source: transaction.proto
 
-package distributed_auth_system
+package protoc
 
 import (
 	context "context"
@@ -20,15 +20,32 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	TransactionService_HandleTransaction_FullMethodName = "/TransactionService/HandleTransaction"
+	TransactionService_AppendEntries_FullMethodName     = "/TransactionService/AppendEntries"
+	TransactionService_RequestVote_FullMethodName       = "/TransactionService/RequestVote"
+	TransactionService_SyncState_FullMethodName         = "/TransactionService/SyncState"
+	TransactionService_VerifyState_FullMethodName       = "/TransactionService/VerifyState"
+	TransactionService_GetNetworkInfo_FullMethodName    = "/TransactionService/GetNetworkInfo"
+	TransactionService_ManageCheckpoint_FullMethodName  = "/TransactionService/ManageCheckpoint"
 )
 
 // TransactionServiceClient is the client API for TransactionService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// TransactionService defines the gRPC service for handling transactions
+// TransactionService defines the gRPC service for handling transactions and consensus
 type TransactionServiceClient interface {
+	// Transaction handling
 	HandleTransaction(ctx context.Context, in *TransactionRequest, opts ...grpc.CallOption) (*TransactionResponse, error)
+	// Raft consensus RPCs
+	AppendEntries(ctx context.Context, in *AppendEntriesRequest, opts ...grpc.CallOption) (*AppendEntriesResponse, error)
+	RequestVote(ctx context.Context, in *RequestVoteRequest, opts ...grpc.CallOption) (*RequestVoteResponse, error)
+	// Synchronization and state verification
+	SyncState(ctx context.Context, in *SyncRequest, opts ...grpc.CallOption) (*SyncResponse, error)
+	VerifyState(ctx context.Context, in *StateVerificationRequest, opts ...grpc.CallOption) (*StateVerificationResponse, error)
+	// Network management
+	GetNetworkInfo(ctx context.Context, in *NetworkInfoRequest, opts ...grpc.CallOption) (*NetworkInfoResponse, error)
+	// Checkpoint management
+	ManageCheckpoint(ctx context.Context, in *CheckpointRequest, opts ...grpc.CallOption) (*CheckpointResponse, error)
 }
 
 type transactionServiceClient struct {
@@ -49,13 +66,84 @@ func (c *transactionServiceClient) HandleTransaction(ctx context.Context, in *Tr
 	return out, nil
 }
 
+func (c *transactionServiceClient) AppendEntries(ctx context.Context, in *AppendEntriesRequest, opts ...grpc.CallOption) (*AppendEntriesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AppendEntriesResponse)
+	err := c.cc.Invoke(ctx, TransactionService_AppendEntries_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *transactionServiceClient) RequestVote(ctx context.Context, in *RequestVoteRequest, opts ...grpc.CallOption) (*RequestVoteResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RequestVoteResponse)
+	err := c.cc.Invoke(ctx, TransactionService_RequestVote_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *transactionServiceClient) SyncState(ctx context.Context, in *SyncRequest, opts ...grpc.CallOption) (*SyncResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SyncResponse)
+	err := c.cc.Invoke(ctx, TransactionService_SyncState_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *transactionServiceClient) VerifyState(ctx context.Context, in *StateVerificationRequest, opts ...grpc.CallOption) (*StateVerificationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(StateVerificationResponse)
+	err := c.cc.Invoke(ctx, TransactionService_VerifyState_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *transactionServiceClient) GetNetworkInfo(ctx context.Context, in *NetworkInfoRequest, opts ...grpc.CallOption) (*NetworkInfoResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(NetworkInfoResponse)
+	err := c.cc.Invoke(ctx, TransactionService_GetNetworkInfo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *transactionServiceClient) ManageCheckpoint(ctx context.Context, in *CheckpointRequest, opts ...grpc.CallOption) (*CheckpointResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CheckpointResponse)
+	err := c.cc.Invoke(ctx, TransactionService_ManageCheckpoint_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TransactionServiceServer is the server API for TransactionService service.
 // All implementations must embed UnimplementedTransactionServiceServer
 // for forward compatibility.
 //
-// TransactionService defines the gRPC service for handling transactions
+// TransactionService defines the gRPC service for handling transactions and consensus
 type TransactionServiceServer interface {
+	// Transaction handling
 	HandleTransaction(context.Context, *TransactionRequest) (*TransactionResponse, error)
+	// Raft consensus RPCs
+	AppendEntries(context.Context, *AppendEntriesRequest) (*AppendEntriesResponse, error)
+	RequestVote(context.Context, *RequestVoteRequest) (*RequestVoteResponse, error)
+	// Synchronization and state verification
+	SyncState(context.Context, *SyncRequest) (*SyncResponse, error)
+	VerifyState(context.Context, *StateVerificationRequest) (*StateVerificationResponse, error)
+	// Network management
+	GetNetworkInfo(context.Context, *NetworkInfoRequest) (*NetworkInfoResponse, error)
+	// Checkpoint management
+	ManageCheckpoint(context.Context, *CheckpointRequest) (*CheckpointResponse, error)
 	mustEmbedUnimplementedTransactionServiceServer()
 }
 
@@ -68,6 +156,24 @@ type UnimplementedTransactionServiceServer struct{}
 
 func (UnimplementedTransactionServiceServer) HandleTransaction(context.Context, *TransactionRequest) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HandleTransaction not implemented")
+}
+func (UnimplementedTransactionServiceServer) AppendEntries(context.Context, *AppendEntriesRequest) (*AppendEntriesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AppendEntries not implemented")
+}
+func (UnimplementedTransactionServiceServer) RequestVote(context.Context, *RequestVoteRequest) (*RequestVoteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RequestVote not implemented")
+}
+func (UnimplementedTransactionServiceServer) SyncState(context.Context, *SyncRequest) (*SyncResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SyncState not implemented")
+}
+func (UnimplementedTransactionServiceServer) VerifyState(context.Context, *StateVerificationRequest) (*StateVerificationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VerifyState not implemented")
+}
+func (UnimplementedTransactionServiceServer) GetNetworkInfo(context.Context, *NetworkInfoRequest) (*NetworkInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNetworkInfo not implemented")
+}
+func (UnimplementedTransactionServiceServer) ManageCheckpoint(context.Context, *CheckpointRequest) (*CheckpointResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ManageCheckpoint not implemented")
 }
 func (UnimplementedTransactionServiceServer) mustEmbedUnimplementedTransactionServiceServer() {}
 func (UnimplementedTransactionServiceServer) testEmbeddedByValue()                            {}
@@ -108,6 +214,114 @@ func _TransactionService_HandleTransaction_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TransactionService_AppendEntries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AppendEntriesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TransactionServiceServer).AppendEntries(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TransactionService_AppendEntries_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TransactionServiceServer).AppendEntries(ctx, req.(*AppendEntriesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TransactionService_RequestVote_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestVoteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TransactionServiceServer).RequestVote(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TransactionService_RequestVote_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TransactionServiceServer).RequestVote(ctx, req.(*RequestVoteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TransactionService_SyncState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SyncRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TransactionServiceServer).SyncState(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TransactionService_SyncState_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TransactionServiceServer).SyncState(ctx, req.(*SyncRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TransactionService_VerifyState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StateVerificationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TransactionServiceServer).VerifyState(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TransactionService_VerifyState_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TransactionServiceServer).VerifyState(ctx, req.(*StateVerificationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TransactionService_GetNetworkInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NetworkInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TransactionServiceServer).GetNetworkInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TransactionService_GetNetworkInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TransactionServiceServer).GetNetworkInfo(ctx, req.(*NetworkInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TransactionService_ManageCheckpoint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckpointRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TransactionServiceServer).ManageCheckpoint(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TransactionService_ManageCheckpoint_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TransactionServiceServer).ManageCheckpoint(ctx, req.(*CheckpointRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TransactionService_ServiceDesc is the grpc.ServiceDesc for TransactionService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -119,7 +333,31 @@ var TransactionService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "HandleTransaction",
 			Handler:    _TransactionService_HandleTransaction_Handler,
 		},
+		{
+			MethodName: "AppendEntries",
+			Handler:    _TransactionService_AppendEntries_Handler,
+		},
+		{
+			MethodName: "RequestVote",
+			Handler:    _TransactionService_RequestVote_Handler,
+		},
+		{
+			MethodName: "SyncState",
+			Handler:    _TransactionService_SyncState_Handler,
+		},
+		{
+			MethodName: "VerifyState",
+			Handler:    _TransactionService_VerifyState_Handler,
+		},
+		{
+			MethodName: "GetNetworkInfo",
+			Handler:    _TransactionService_GetNetworkInfo_Handler,
+		},
+		{
+			MethodName: "ManageCheckpoint",
+			Handler:    _TransactionService_ManageCheckpoint_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "distributed-auth-system/transaction.proto",
+	Metadata: "transaction.proto",
 }

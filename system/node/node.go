@@ -1,4 +1,4 @@
-package main
+package node
 
 import (
 	"flag"
@@ -11,20 +11,7 @@ import (
 	"time"
 )
 
-// Configuration parameters
-type Config struct {
-	NodeID             string
-	Port               string
-	DBPath             string
-	RedisAddr          string
-	PeerAddresses      map[string]string
-	UseTLS             bool
-	ElectionTimeoutMin int
-	ElectionTimeoutMax int
-	HeartbeatInterval  int
-}
-
-func main() {
+func Node() {
 	// Parse command line flags
 	nodeID := flag.String("node", "node1", "Node ID")
 	port := flag.String("port", ":50051", "Port to listen on")

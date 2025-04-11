@@ -1,4 +1,4 @@
-package main
+package node
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 
 // TransactionService defines the gRPC service for handling transactions
 type TransactionService struct {
-	distributed_auth_system.UnimplementedTransactionServiceServer
+	distributed_auth_system.TransactionServiceServer
 	dataStore        *DataStore
 	consensusManager *ConsensusManager
 	nodeID           string
