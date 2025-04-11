@@ -2,11 +2,7 @@
 REM This script demonstrates how to run a cluster of distributed auth system nodes
 REM and interact with them using the client on Windows.
 
-REM Function to clean up background processes on exit
-:cleanup
-echo Cleaning up...
-taskkill /F /PID %NODE1_PID% /PID %NODE2_PID% /PID %NODE3_PID% 2>nul
-exit /b
+
 
 REM Build the system
 echo Building the distributed auth system...
@@ -27,12 +23,6 @@ if %ERRORLEVEL% neq 0 (
     start /B redis-server
     timeout /t 2 > nul
 )
-
-REM Create nodes directory
-if not exist data\nodes mkdir data\nodes
-if not exist data\nodes\node1 mkdir data\nodes\node1
-if not exist data\nodes\node2 mkdir data\nodes\node2
-if not exist data\nodes\node3 mkdir data\nodes\node3
 
 REM Start three nodes in the background
 echo Starting node 1...
@@ -71,8 +61,19 @@ client\auth-client.exe -server=localhost:50053 -op=auth -key=john.doe -value=sec
 
 echo.
 echo Demo completed! The nodes are still running.
-echo Press Ctrl+C to stop all nodes and clean up.
+echo Press any key to stop all nodes and clean up.
 
-REM Wait for user to press Ctrl+C
+REM Wait for user to press any key
 pause
-goto cleanup
+
+REM Clean up
+call :cleanup
+
+REM Function to clean up background processes on exit
+:cleanup
+echo Cleaning up...
+taskkill /F /PID %NODE1_PID% /PID %NODE2_PID% /PID %NODE3_PID% 2>nul
+exit /b
+
+
+exit /b

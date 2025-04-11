@@ -9,6 +9,7 @@ import (
 	distributed_auth_system "github.com/GooseFuse/distributed-auth-system/protoc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 // NetworkManager manages network communication between nodes
@@ -96,11 +97,10 @@ func (nm *NetworkManager) ConnectToPeer(peerID string, peerAddr string) {
 		opts = append(opts, grpc.WithTransportCredentials(creds))
 	} else {
 		// Use insecure connection (for development only)
-		opts = append(opts, grpc.WithInsecure())
+		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
 
-	// Connect to peer
-	conn, err := grpc.Dial(peerAddr, opts...)
+	conn, err := grpc.NewClient("peerAddr", opts...)
 	if err != nil {
 		log.Printf("Failed to connect to peer %s at %s: %v", peerID, peerAddr, err)
 		return

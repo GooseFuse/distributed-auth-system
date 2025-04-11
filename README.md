@@ -121,30 +121,21 @@ For more details on using the client, see the [client README](client/README.md).
 
 ### Running the Demo
 
-Demo scripts are provided to demonstrate how to run a cluster of nodes and interact with them using the client:
+A demo script is provided to demonstrate how to run a cluster of nodes and interact with them using the client:
 
-#### On Linux/macOS:
-```bash
-# Make the script executable
-chmod +x run_demo.sh
-
-# Run the demo
-./run_demo.sh
 ```
-
-#### On Windows:
-```
-# Run the batch script
+# Run the demo script
 run_demo.bat
 ```
 
-The demo scripts:
-1. Build the distributed auth system and client
-2. Start Redis if it's not already running
-3. Create a nodes directory with subdirectories for each node
-4. Start three nodes on different ports
-5. Demonstrate client operations (store, get, authenticate)
-6. Keep the nodes running until you press Ctrl+C (or any key on Windows)
+The demo script:
+1. Builds the distributed auth system and client
+2. Starts Redis if it's not already running
+3. Creates a nodes directory with subdirectories for each node
+4. Starts three nodes on different ports
+5. Demonstrates client operations (store, get, authenticate)
+6. Keeps the nodes running until you press any key
+7. Automatically cleans up by stopping all node processes
 
 ## System Components
 
@@ -203,7 +194,7 @@ isValid := securityManager.VerifySignature(data, signature, publicKey)
 - `main.go`: Main application entry point
 - `transaction.proto`: Protocol buffer definition
 - `client/`: Client application for interacting with the system
-- `run_demo.sh` and `run_demo.bat`: Demo scripts for Linux/macOS and Windows
+- `run_demo.bat`: Demo script for running a cluster of nodes
 - `.gitignore`: Specifies files and directories to be excluded from version control
 - `LICENSE`: MIT license file
 
