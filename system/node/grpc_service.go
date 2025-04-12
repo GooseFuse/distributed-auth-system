@@ -5,16 +5,18 @@ import (
 	"crypto/tls"
 	"log"
 	"net"
+	"path/filepath"
 	"sync"
 
-	distributed_auth_system "github.com/GooseFuse/distributed-auth-system/protoc"
+	"github.com/GooseFuse/distributed-auth-system/protoc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/reflection"
 )
 
 // TransactionService defines the gRPC service for handling transactions
 type TransactionService struct {
-	distributed_auth_system.TransactionServiceServer
+	protoc.UnimplementedTransactionServiceServer
 	dataStore        *DataStore
 	consensusManager *ConsensusManager
 	nodeID           string
@@ -31,12 +33,14 @@ func NewTransactionService(nodeID string, dataStore *DataStore, consensusManager
 }
 
 // StartServer starts the gRPC server
-func StartServer(nodeID string, port string, dataStore *DataStore, consensusManager *ConsensusManager, useTLS bool) {
+func StartServer(nodeID string, port string, dataStore *DataStore, consensusManager *ConsensusManager, useTLS bool, certDir string) {
 	var opts []grpc.ServerOption
 
 	if useTLS {
 		// Load TLS credentials
-		cert, err := tls.LoadX509KeyPair("cert.pem", "key.pem")
+		certPath := filepath.Join(certDir, "cert.pem")
+		keyPath := filepath.Join(certDir, "key.pem")
+		cert, err := tls.LoadX509KeyPair(certPath, keyPath)
 		if err != nil {
 			log.Fatalf("Failed to load certificates: %v", err)
 		}
@@ -56,8 +60,11 @@ func StartServer(nodeID string, port string, dataStore *DataStore, consensusMana
 
 	grpcServer := grpc.NewServer(opts...)
 	service := NewTransactionService(nodeID, dataStore, consensusManager)
-	distributed_auth_system.RegisterTransactionServiceServer(grpcServer, service)
-
+	protoc.RegisterTransactionServiceServer(grpcServer, service)
+	for svc := range grpcServer.GetServiceInfo() {
+		log.Printf("✔ Registered gRPC service: %s", svc)
+	}
+	reflection.Register(grpcServer)
 	log.Printf("Node %s: gRPC server listening on %s", nodeID, port)
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
@@ -65,9 +72,9 @@ func StartServer(nodeID string, port string, dataStore *DataStore, consensusMana
 }
 
 // HandleTransaction handles a transaction request
-func (s *TransactionService) HandleTransaction(ctx context.Context, req *distributed_auth_system.TransactionRequest) (*distributed_auth_system.TransactionResponse, error) {
+func (s *TransactionService) HandleTransaction(ctx context.Context, req *protoc.TransactionRequest) (*protoc.TransactionResponse, error) {
 	// Log the transaction
-	log.Printf("Received transaction: key=%s, value=%s", req.Key, req.Value)
+	log.Printf("Received transaction: key=%s, value=%s", req.Transaction.Key, req.Transaction.Value)
 
 	// If this node is not the leader, forward to leader (in a real implementation)
 	if !s.consensusManager.IsLeader() {
@@ -77,15 +84,26 @@ func (s *TransactionService) HandleTransaction(ctx context.Context, req *distrib
 	}
 
 	// Propose transaction to the consensus mechanism
-	success, err := s.consensusManager.ProposeTransaction(req.Key, req.Value)
+	success, err := s.consensusManager.ProposeTransaction(req.Transaction.Key, req.Transaction.Value)
 	if err != nil {
 		log.Printf("Error proposing transaction: %v", err)
-		return &distributed_auth_system.TransactionResponse{
+		return &protoc.TransactionResponse{
 			Success: false,
 		}, nil
 	}
 
-	return &distributed_auth_system.TransactionResponse{
+	return &protoc.TransactionResponse{
 		Success: success,
+	}, nil
+}
+
+func (s *TransactionService) VerifyState(ctx context.Context, req *protoc.StateVerificationRequest) (svr *protoc.StateVerificationResponse, e error) {
+	localMerkleRoot := s.dataStore.GetMerkleRoot() // ← your local copy
+
+	isConsistent := req.MerkleRoot == localMerkleRoot
+
+	return &protoc.StateVerificationResponse{
+		Consistent: isConsistent,
+		MerkleRoot: localMerkleRoot,
 	}, nil
 }

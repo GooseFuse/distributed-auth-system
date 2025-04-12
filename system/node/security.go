@@ -26,10 +26,11 @@ type SecurityManager struct {
 	publicKey  *ecdsa.PublicKey
 	certPool   *x509.CertPool
 	mutex      sync.RWMutex
+	UseTLS     bool
 }
 
 // NewSecurityManager creates a new SecurityManager
-func NewSecurityManager(nodeID string, certDir string) (*SecurityManager, error) {
+func NewSecurityManager(nodeID string, certDir string, useTLS bool) (*SecurityManager, error) {
 	// Create certificate directory if it doesn't exist
 	err := os.MkdirAll(certDir, 0755)
 	if err != nil {
@@ -139,6 +140,7 @@ func NewSecurityManager(nodeID string, certDir string) (*SecurityManager, error)
 		privateKey: privateKey,
 		publicKey:  &privateKey.PublicKey,
 		certPool:   certPool,
+		UseTLS:     useTLS,
 	}, nil
 }
 

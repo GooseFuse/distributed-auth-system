@@ -60,7 +60,7 @@ func Node() {
 
 	// Initialize the security manager
 	certDir := filepath.Join(config.DBPath, "certs")
-	securityManager, err := NewSecurityManager(config.NodeID, certDir)
+	securityManager, err := NewSecurityManager(config.NodeID, certDir, config.UseTLS)
 	if err != nil {
 		log.Fatalf("Failed to initialize security manager: %v", err)
 	}
@@ -105,7 +105,7 @@ func Node() {
 	defer checkpointManager.Stop()
 
 	// Start the gRPC server in a separate goroutine
-	go StartServer(config.NodeID, config.Port, dataStore, consensusManager, config.UseTLS)
+	go StartServer(config.NodeID, config.Port, dataStore, consensusManager, config.UseTLS, certDir)
 
 	// Log startup information
 	log.Printf("Node %s started successfully", config.NodeID)

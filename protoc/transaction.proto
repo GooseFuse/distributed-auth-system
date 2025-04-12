@@ -1,6 +1,7 @@
 syntax = "proto3";
 
-option go_package = "github.com/GooseFuse/distributed-auth-system/protoc";
+package protoc;
+option go_package = "github.com/GooseFuse/distributed-auth-system/protoc;protoc";
 
 // Transaction represents a key-value transaction with authentication and signature
 message Transaction {

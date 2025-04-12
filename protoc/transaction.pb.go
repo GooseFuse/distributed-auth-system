@@ -1001,7 +1001,7 @@ var File_transaction_proto protoreflect.FileDescriptor
 
 const file_transaction_proto_rawDesc = "" +
 	"\n" +
-	"\x11transaction.proto\"\xa0\x01\n" +
+	"\x11transaction.proto\x12\x06protoc\"\xa0\x01\n" +
 	"\vTransaction\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x10\n" +
 	"\x03key\x18\x02 \x01(\tR\x03key\x12\x14\n" +
@@ -1009,20 +1009,20 @@ const file_transaction_proto_rawDesc = "" +
 	"\tsignature\x18\x04 \x01(\fR\tsignature\x12\x1d\n" +
 	"\n" +
 	"public_key\x18\x05 \x01(\tR\tpublicKey\x12\x1c\n" +
-	"\ttimestamp\x18\x06 \x01(\x03R\ttimestamp\"D\n" +
-	"\x12TransactionRequest\x12.\n" +
-	"\vtransaction\x18\x01 \x01(\v2\f.TransactionR\vtransaction\"u\n" +
+	"\ttimestamp\x18\x06 \x01(\x03R\ttimestamp\"K\n" +
+	"\x12TransactionRequest\x125\n" +
+	"\vtransaction\x18\x01 \x01(\v2\x13.protoc.TransactionR\vtransaction\"u\n" +
 	"\x13TransactionResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12#\n" +
 	"\rerror_message\x18\x02 \x01(\tR\ferrorMessage\x12\x1f\n" +
 	"\vmerkle_root\x18\x03 \x01(\tR\n" +
-	"merkleRoot\"\xde\x01\n" +
+	"merkleRoot\"\xe5\x01\n" +
 	"\x14AppendEntriesRequest\x12\x12\n" +
 	"\x04term\x18\x01 \x01(\x05R\x04term\x12\x1b\n" +
 	"\tleader_id\x18\x02 \x01(\tR\bleaderId\x12$\n" +
 	"\x0eprev_log_index\x18\x03 \x01(\x05R\fprevLogIndex\x12\"\n" +
-	"\rprev_log_term\x18\x04 \x01(\x05R\vprevLogTerm\x12&\n" +
-	"\aentries\x18\x05 \x03(\v2\f.TransactionR\aentries\x12#\n" +
+	"\rprev_log_term\x18\x04 \x01(\x05R\vprevLogTerm\x12-\n" +
+	"\aentries\x18\x05 \x03(\v2\x13.protoc.TransactionR\aentries\x12#\n" +
 	"\rleader_commit\x18\x06 \x01(\x05R\fleaderCommit\"E\n" +
 	"\x15AppendEntriesResponse\x12\x12\n" +
 	"\x04term\x18\x01 \x01(\x05R\x04term\x12\x18\n" +
@@ -1039,12 +1039,12 @@ const file_transaction_proto_rawDesc = "" +
 	"\anode_id\x18\x01 \x01(\tR\x06nodeId\x12\x1f\n" +
 	"\vmerkle_root\x18\x02 \x01(\tR\n" +
 	"merkleRoot\x12!\n" +
-	"\fbloom_filter\x18\x03 \x01(\fR\vbloomFilter\"\x8a\x01\n" +
+	"\fbloom_filter\x18\x03 \x01(\fR\vbloomFilter\"\x91\x01\n" +
 	"\fSyncResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1f\n" +
 	"\vmerkle_root\x18\x02 \x01(\tR\n" +
-	"merkleRoot\x12?\n" +
-	"\x14missing_transactions\x18\x03 \x03(\v2\f.TransactionR\x13missingTransactions\"T\n" +
+	"merkleRoot\x12F\n" +
+	"\x14missing_transactions\x18\x03 \x03(\v2\x13.protoc.TransactionR\x13missingTransactions\"T\n" +
 	"\x18StateVerificationRequest\x12\x17\n" +
 	"\anode_id\x18\x01 \x01(\tR\x06nodeId\x12\x1f\n" +
 	"\vmerkle_root\x18\x02 \x01(\tR\n" +
@@ -1061,9 +1061,9 @@ const file_transaction_proto_rawDesc = "" +
 	"\tis_leader\x18\x03 \x01(\bR\bisLeader\x12\x12\n" +
 	"\x04term\x18\x04 \x01(\x05R\x04term\"B\n" +
 	"\x12NetworkInfoRequest\x12,\n" +
-	"\x12requesting_node_id\x18\x01 \x01(\tR\x10requestingNodeId\"v\n" +
-	"\x13NetworkInfoResponse\x12\x1f\n" +
-	"\x05nodes\x18\x01 \x03(\v2\t.NodeInfoR\x05nodes\x12\x1b\n" +
+	"\x12requesting_node_id\x18\x01 \x01(\tR\x10requestingNodeId\"}\n" +
+	"\x13NetworkInfoResponse\x12&\n" +
+	"\x05nodes\x18\x01 \x03(\v2\x10.protoc.NodeInfoR\x05nodes\x12\x1b\n" +
 	"\tleader_id\x18\x02 \x01(\tR\bleaderId\x12!\n" +
 	"\fcurrent_term\x18\x03 \x01(\x05R\vcurrentTerm\"i\n" +
 	"\x11CheckpointRequest\x12\x17\n" +
@@ -1073,15 +1073,15 @@ const file_transaction_proto_rawDesc = "" +
 	"\x12CheckpointResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12#\n" +
 	"\rcheckpoint_id\x18\x02 \x01(\x03R\fcheckpointId\x12#\n" +
-	"\rerror_message\x18\x03 \x01(\tR\ferrorMessage2\xb8\x03\n" +
-	"\x12TransactionService\x12>\n" +
-	"\x11HandleTransaction\x12\x13.TransactionRequest\x1a\x14.TransactionResponse\x12>\n" +
-	"\rAppendEntries\x12\x15.AppendEntriesRequest\x1a\x16.AppendEntriesResponse\x128\n" +
-	"\vRequestVote\x12\x13.RequestVoteRequest\x1a\x14.RequestVoteResponse\x12(\n" +
-	"\tSyncState\x12\f.SyncRequest\x1a\r.SyncResponse\x12D\n" +
-	"\vVerifyState\x12\x19.StateVerificationRequest\x1a\x1a.StateVerificationResponse\x12;\n" +
-	"\x0eGetNetworkInfo\x12\x13.NetworkInfoRequest\x1a\x14.NetworkInfoResponse\x12;\n" +
-	"\x10ManageCheckpoint\x12\x12.CheckpointRequest\x1a\x13.CheckpointResponseB5Z3github.com/GooseFuse/distributed-auth-system/protocb\x06proto3"
+	"\rerror_message\x18\x03 \x01(\tR\ferrorMessage2\x9a\x04\n" +
+	"\x12TransactionService\x12L\n" +
+	"\x11HandleTransaction\x12\x1a.protoc.TransactionRequest\x1a\x1b.protoc.TransactionResponse\x12L\n" +
+	"\rAppendEntries\x12\x1c.protoc.AppendEntriesRequest\x1a\x1d.protoc.AppendEntriesResponse\x12F\n" +
+	"\vRequestVote\x12\x1a.protoc.RequestVoteRequest\x1a\x1b.protoc.RequestVoteResponse\x126\n" +
+	"\tSyncState\x12\x13.protoc.SyncRequest\x1a\x14.protoc.SyncResponse\x12R\n" +
+	"\vVerifyState\x12 .protoc.StateVerificationRequest\x1a!.protoc.StateVerificationResponse\x12I\n" +
+	"\x0eGetNetworkInfo\x12\x1a.protoc.NetworkInfoRequest\x1a\x1b.protoc.NetworkInfoResponse\x12I\n" +
+	"\x10ManageCheckpoint\x12\x19.protoc.CheckpointRequest\x1a\x1a.protoc.CheckpointResponseB<Z:github.com/GooseFuse/distributed-auth-system/protoc;protocb\x06proto3"
 
 var (
 	file_transaction_proto_rawDescOnce sync.Once
@@ -1097,42 +1097,42 @@ func file_transaction_proto_rawDescGZIP() []byte {
 
 var file_transaction_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_transaction_proto_goTypes = []any{
-	(*Transaction)(nil),               // 0: Transaction
-	(*TransactionRequest)(nil),        // 1: TransactionRequest
-	(*TransactionResponse)(nil),       // 2: TransactionResponse
-	(*AppendEntriesRequest)(nil),      // 3: AppendEntriesRequest
-	(*AppendEntriesResponse)(nil),     // 4: AppendEntriesResponse
-	(*RequestVoteRequest)(nil),        // 5: RequestVoteRequest
-	(*RequestVoteResponse)(nil),       // 6: RequestVoteResponse
-	(*SyncRequest)(nil),               // 7: SyncRequest
-	(*SyncResponse)(nil),              // 8: SyncResponse
-	(*StateVerificationRequest)(nil),  // 9: StateVerificationRequest
-	(*StateVerificationResponse)(nil), // 10: StateVerificationResponse
-	(*NodeInfo)(nil),                  // 11: NodeInfo
-	(*NetworkInfoRequest)(nil),        // 12: NetworkInfoRequest
-	(*NetworkInfoResponse)(nil),       // 13: NetworkInfoResponse
-	(*CheckpointRequest)(nil),         // 14: CheckpointRequest
-	(*CheckpointResponse)(nil),        // 15: CheckpointResponse
+	(*Transaction)(nil),               // 0: protoc.Transaction
+	(*TransactionRequest)(nil),        // 1: protoc.TransactionRequest
+	(*TransactionResponse)(nil),       // 2: protoc.TransactionResponse
+	(*AppendEntriesRequest)(nil),      // 3: protoc.AppendEntriesRequest
+	(*AppendEntriesResponse)(nil),     // 4: protoc.AppendEntriesResponse
+	(*RequestVoteRequest)(nil),        // 5: protoc.RequestVoteRequest
+	(*RequestVoteResponse)(nil),       // 6: protoc.RequestVoteResponse
+	(*SyncRequest)(nil),               // 7: protoc.SyncRequest
+	(*SyncResponse)(nil),              // 8: protoc.SyncResponse
+	(*StateVerificationRequest)(nil),  // 9: protoc.StateVerificationRequest
+	(*StateVerificationResponse)(nil), // 10: protoc.StateVerificationResponse
+	(*NodeInfo)(nil),                  // 11: protoc.NodeInfo
+	(*NetworkInfoRequest)(nil),        // 12: protoc.NetworkInfoRequest
+	(*NetworkInfoResponse)(nil),       // 13: protoc.NetworkInfoResponse
+	(*CheckpointRequest)(nil),         // 14: protoc.CheckpointRequest
+	(*CheckpointResponse)(nil),        // 15: protoc.CheckpointResponse
 }
 var file_transaction_proto_depIdxs = []int32{
-	0,  // 0: TransactionRequest.transaction:type_name -> Transaction
-	0,  // 1: AppendEntriesRequest.entries:type_name -> Transaction
-	0,  // 2: SyncResponse.missing_transactions:type_name -> Transaction
-	11, // 3: NetworkInfoResponse.nodes:type_name -> NodeInfo
-	1,  // 4: TransactionService.HandleTransaction:input_type -> TransactionRequest
-	3,  // 5: TransactionService.AppendEntries:input_type -> AppendEntriesRequest
-	5,  // 6: TransactionService.RequestVote:input_type -> RequestVoteRequest
-	7,  // 7: TransactionService.SyncState:input_type -> SyncRequest
-	9,  // 8: TransactionService.VerifyState:input_type -> StateVerificationRequest
-	12, // 9: TransactionService.GetNetworkInfo:input_type -> NetworkInfoRequest
-	14, // 10: TransactionService.ManageCheckpoint:input_type -> CheckpointRequest
-	2,  // 11: TransactionService.HandleTransaction:output_type -> TransactionResponse
-	4,  // 12: TransactionService.AppendEntries:output_type -> AppendEntriesResponse
-	6,  // 13: TransactionService.RequestVote:output_type -> RequestVoteResponse
-	8,  // 14: TransactionService.SyncState:output_type -> SyncResponse
-	10, // 15: TransactionService.VerifyState:output_type -> StateVerificationResponse
-	13, // 16: TransactionService.GetNetworkInfo:output_type -> NetworkInfoResponse
-	15, // 17: TransactionService.ManageCheckpoint:output_type -> CheckpointResponse
+	0,  // 0: protoc.TransactionRequest.transaction:type_name -> protoc.Transaction
+	0,  // 1: protoc.AppendEntriesRequest.entries:type_name -> protoc.Transaction
+	0,  // 2: protoc.SyncResponse.missing_transactions:type_name -> protoc.Transaction
+	11, // 3: protoc.NetworkInfoResponse.nodes:type_name -> protoc.NodeInfo
+	1,  // 4: protoc.TransactionService.HandleTransaction:input_type -> protoc.TransactionRequest
+	3,  // 5: protoc.TransactionService.AppendEntries:input_type -> protoc.AppendEntriesRequest
+	5,  // 6: protoc.TransactionService.RequestVote:input_type -> protoc.RequestVoteRequest
+	7,  // 7: protoc.TransactionService.SyncState:input_type -> protoc.SyncRequest
+	9,  // 8: protoc.TransactionService.VerifyState:input_type -> protoc.StateVerificationRequest
+	12, // 9: protoc.TransactionService.GetNetworkInfo:input_type -> protoc.NetworkInfoRequest
+	14, // 10: protoc.TransactionService.ManageCheckpoint:input_type -> protoc.CheckpointRequest
+	2,  // 11: protoc.TransactionService.HandleTransaction:output_type -> protoc.TransactionResponse
+	4,  // 12: protoc.TransactionService.AppendEntries:output_type -> protoc.AppendEntriesResponse
+	6,  // 13: protoc.TransactionService.RequestVote:output_type -> protoc.RequestVoteResponse
+	8,  // 14: protoc.TransactionService.SyncState:output_type -> protoc.SyncResponse
+	10, // 15: protoc.TransactionService.VerifyState:output_type -> protoc.StateVerificationResponse
+	13, // 16: protoc.TransactionService.GetNetworkInfo:output_type -> protoc.NetworkInfoResponse
+	15, // 17: protoc.TransactionService.ManageCheckpoint:output_type -> protoc.CheckpointResponse
 	11, // [11:18] is the sub-list for method output_type
 	4,  // [4:11] is the sub-list for method input_type
 	4,  // [4:4] is the sub-list for extension type_name

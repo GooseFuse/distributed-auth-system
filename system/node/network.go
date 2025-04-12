@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	distributed_auth_system "github.com/GooseFuse/distributed-auth-system/protoc"
+	"github.com/GooseFuse/distributed-auth-system/protoc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
@@ -16,7 +16,7 @@ import (
 type NetworkManager struct {
 	nodeID          string
 	peerNodes       map[string]string // Map of node IDs to addresses
-	peerClients     map[string]distributed_auth_system.TransactionServiceClient
+	peerClients     map[string]*TransactionServiceClient
 	pubSubManager   *PubSubManager
 	rateLimiter     *RateLimiter
 	securityManager *SecurityManager
@@ -31,7 +31,7 @@ func NewNetworkManager(nodeID string, securityManager *SecurityManager) *Network
 	return &NetworkManager{
 		nodeID:          nodeID,
 		peerNodes:       make(map[string]string),
-		peerClients:     make(map[string]distributed_auth_system.TransactionServiceClient),
+		peerClients:     make(map[string]*TransactionServiceClient),
 		pubSubManager:   NewPubSubManager(),
 		rateLimiter:     NewRateLimiter(100, 1*time.Minute), // 100 requests per minute
 		securityManager: securityManager,
@@ -91,7 +91,7 @@ func (nm *NetworkManager) ConnectToPeer(peerID string, peerAddr string) {
 
 	// Set up connection options
 	var opts []grpc.DialOption
-	if nm.securityManager != nil {
+	if nm.securityManager != nil && nm.securityManager.UseTLS {
 		// Use TLS
 		creds := credentials.NewTLS(nm.securityManager.GetTLSConfig())
 		opts = append(opts, grpc.WithTransportCredentials(creds))
@@ -100,25 +100,25 @@ func (nm *NetworkManager) ConnectToPeer(peerID string, peerAddr string) {
 		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
 
-	conn, err := grpc.NewClient("peerAddr", opts...)
+	conn, err := grpc.NewClient(peerAddr, opts...)
 	if err != nil {
 		log.Printf("Failed to connect to peer %s at %s: %v", peerID, peerAddr, err)
 		return
 	}
 
 	// Create client
-	nm.peerClients[peerID] = distributed_auth_system.NewTransactionServiceClient(conn)
+	nm.peerClients[peerID] = NewTransactionServiceClient(conn)
 
 	log.Printf("Connected to peer %s at %s", peerID, peerAddr)
 }
 
 // GetPeerClients returns a map of peer clients
-func (nm *NetworkManager) GetPeerClients() map[string]distributed_auth_system.TransactionServiceClient {
+func (nm *NetworkManager) GetPeerClients() map[string]*TransactionServiceClient {
 	nm.mutex.RLock()
 	defer nm.mutex.RUnlock()
 
 	// Create a copy of the map to avoid concurrent access issues
-	clients := make(map[string]distributed_auth_system.TransactionServiceClient)
+	clients := make(map[string]*TransactionServiceClient)
 	for id, client := range nm.peerClients {
 		clients[id] = client
 	}
@@ -132,14 +132,13 @@ func (nm *NetworkManager) BroadcastTransaction(key, value string) {
 	defer nm.mutex.RUnlock()
 
 	// Create transaction request
-	req := &distributed_auth_system.TransactionRequest{
-		Key:   key,
-		Value: value,
+	req := &protoc.TransactionRequest{
+		Transaction: &protoc.Transaction{Key: key, Value: value},
 	}
 
 	// Broadcast to all peers
 	for peerID, client := range nm.peerClients {
-		go func(id string, c distributed_auth_system.TransactionServiceClient) {
+		go func(id string, c *TransactionServiceClient) {
 			ctx, cancel := context.WithTimeout(nm.ctx, 5*time.Second)
 			defer cancel()
 

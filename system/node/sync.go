@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	distributed_auth_system "github.com/GooseFuse/distributed-auth-system/protoc"
+	"github.com/GooseFuse/distributed-auth-system/protoc"
 )
 
 // SyncManager manages state synchronization between nodes
@@ -120,20 +120,21 @@ func (sm *SyncManager) SyncWithPeers() {
 }
 
 // syncWithPeer synchronizes with a single peer
-func (sm *SyncManager) syncWithPeer(peerID string, client distributed_auth_system.TransactionServiceClient,
+func (sm *SyncManager) syncWithPeer(peerID string, client *TransactionServiceClient,
 	localMerkleRoot string, localKeysMap map[string]bool, stats *SyncStats) {
 
 	// Set timeout for the sync operation
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 
 	// In a real implementation, we would check if we can use the extended client
 	// For now, we'll use the simulation approach
 	//sm.simulateSyncWithPeer(ctx, peerID, client, localMerkleRoot, localKeysMap, stats)
-	resp, err := client.VerifyState(ctx, &StateVerificationRequest{
+	resp, err := client.VerifyState(ctx, &protoc.StateVerificationRequest{
 		NodeId:     sm.networkManager.nodeID,
 		MerkleRoot: localMerkleRoot,
 	})
+
 	if err != nil {
 		log.Printf("stateVerifyResponseErr: %s", err)
 		return

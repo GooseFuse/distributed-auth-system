@@ -19,13 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TransactionService_HandleTransaction_FullMethodName = "/TransactionService/HandleTransaction"
-	TransactionService_AppendEntries_FullMethodName     = "/TransactionService/AppendEntries"
-	TransactionService_RequestVote_FullMethodName       = "/TransactionService/RequestVote"
-	TransactionService_SyncState_FullMethodName         = "/TransactionService/SyncState"
-	TransactionService_VerifyState_FullMethodName       = "/TransactionService/VerifyState"
-	TransactionService_GetNetworkInfo_FullMethodName    = "/TransactionService/GetNetworkInfo"
-	TransactionService_ManageCheckpoint_FullMethodName  = "/TransactionService/ManageCheckpoint"
+	TransactionService_HandleTransaction_FullMethodName = "/protoc.TransactionService/HandleTransaction"
+	TransactionService_AppendEntries_FullMethodName     = "/protoc.TransactionService/AppendEntries"
+	TransactionService_RequestVote_FullMethodName       = "/protoc.TransactionService/RequestVote"
+	TransactionService_SyncState_FullMethodName         = "/protoc.TransactionService/SyncState"
+	TransactionService_VerifyState_FullMethodName       = "/protoc.TransactionService/VerifyState"
+	TransactionService_GetNetworkInfo_FullMethodName    = "/protoc.TransactionService/GetNetworkInfo"
+	TransactionService_ManageCheckpoint_FullMethodName  = "/protoc.TransactionService/ManageCheckpoint"
 )
 
 // TransactionServiceClient is the client API for TransactionService service.
@@ -326,7 +326,7 @@ func _TransactionService_ManageCheckpoint_Handler(srv interface{}, ctx context.C
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var TransactionService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "TransactionService",
+	ServiceName: "protoc.TransactionService",
 	HandlerType: (*TransactionServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
