@@ -1,7 +1,9 @@
 package node
 
 import (
+	"bytes"
 	"context"
+	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -12,6 +14,7 @@ import (
 	"time"
 
 	"github.com/GooseFuse/distributed-auth-system/protoc"
+	"github.com/willf/bloom"
 )
 
 // SyncManager manages state synchronization between nodes
@@ -120,38 +123,30 @@ func (sm *SyncManager) SyncWithPeers() {
 }
 
 // syncWithPeer synchronizes with a single peer
-func (sm *SyncManager) syncWithPeer(peerID string, client *TransactionServiceClient,
+func (sm *SyncManager) syncWithPeer(peerID string, client protoc.TransactionServiceClient,
 	localMerkleRoot string, localKeysMap map[string]bool, stats *SyncStats) {
 
 	// Set timeout for the sync operation
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 
-	// In a real implementation, we would check if we can use the extended client
-	// For now, we'll use the simulation approach
-	//sm.simulateSyncWithPeer(ctx, peerID, client, localMerkleRoot, localKeysMap, stats)
-	resp, err := client.VerifyState(ctx, &protoc.StateVerificationRequest{
+	resp, err := client.SyncState(ctx, &protoc.SyncRequest{
 		NodeId:     sm.networkManager.nodeID,
 		MerkleRoot: localMerkleRoot,
 	})
-
 	if err != nil {
-		log.Printf("stateVerifyResponseErr: %s", err)
+		log.Printf("❌ Peer %s: SyncState error: %v", peerID, err)
+		stats.Errors++
 		return
 	}
 
-	log.Printf("stateVerifyResponse: %s", resp)
-
-}
-
-// simulateSyncWithPeer simulates synchronization with a peer when the extended client is not available
-func (sm *SyncManager) simulateSyncWithPeer(ctx context.Context, peerID string, client interface{},
-	localMerkleRoot string, localKeysMap map[string]bool, stats *SyncStats) {
-
-	log.Printf("Simulating sync with peer %s", peerID)
-
 	// Create a bloom filter of local keys for efficient comparison
-	bloomFilter := sm.createBloomFilter(localKeysMap)
+	bloomFilter, err := sm.createBloomFilter(localKeysMap)
+	if err != nil {
+		log.Printf("❌ Peer %s: SyncState error: %v", peerID, err)
+		stats.Errors++
+		return
+	}
 
 	// Use ctx and bloomFilter in a way that doesn't affect functionality
 	// but satisfies the compiler's "declared and not used" errors
@@ -161,116 +156,63 @@ func (sm *SyncManager) simulateSyncWithPeer(ctx context.Context, peerID string, 
 	}
 	log.Printf("Using bloom filter of size %d bytes", len(bloomFilter))
 
-	// Batch processing parameters
-	batchSize := 100
-	var continuationToken string
-	hasMore := true
-
-	// Process batches until we've received all data
-	for hasMore && stats.Errors < 3 { // Limit errors to prevent infinite loops
-		// Simulate the SyncState RPC
-		log.Printf("Simulating SyncState RPC with peer %s (batch %s)", peerID, continuationToken)
-
-		// Simulate getting a batch of transactions
-		simulatedBatch := sm.simulateTransactionBatch(peerID, len(continuationToken), batchSize)
-
-		if len(simulatedBatch) == 0 {
-			// No more transactions to process
-			hasMore = false
-			break
-		}
-
-		// Process each transaction in the batch
-		for _, tx := range simulatedBatch {
-			// Check if we already have this key
-			_, exists := localKeysMap[tx.Key]
-
-			// Process the transaction
-			conflict, err := sm.processTransaction(tx, exists)
-
-			if err != nil {
-				stats.Errors++
-				log.Printf("Error processing transaction from peer %s: %v", peerID, err)
-				continue
-			}
-
-			stats.TransactionsReceived++
-			if conflict {
-				stats.ConflictsResolved++
-			}
-
-			// Add to local keys map
-			localKeysMap[tx.Key] = true
-		}
-
-		// Update continuation token (in real implementation, this would come from the response)
-		if continuationToken == "" {
-			continuationToken = "1"
-		} else {
-			// Simulate pagination by incrementing the token
-			hasMore = false // Only process one batch in simulation
-		}
+	if resp == nil {
+		log.Printf("❌ client.SyncState.Resp is nil")
+		return
 	}
+	for _, tx := range resp.MissingTransactions {
+		// Check if we already have this key
+		_, exists := localKeysMap[tx.Key]
+
+		// Process the transaction
+		conflict, err := sm.processTransaction(tx, exists)
+
+		if err != nil {
+			stats.Errors++
+			log.Printf("Error processing transaction from peer %s: %v", peerID, err)
+			continue
+		}
+
+		stats.TransactionsReceived++
+		if conflict {
+			stats.ConflictsResolved++
+		}
+
+		// Add to local keys map
+		localKeysMap[tx.Key] = true
+	}
+
+	log.Printf("✅ Peer %s: Success: %v | Peer Root: %s | Local Root: %s",
+		peerID, resp.Success, resp.MerkleRoot, localMerkleRoot,
+	)
 
 	// Verify state consistency after sync
 	log.Printf("Verifying state consistency with peer %s", peerID)
-	sm.VerifyStateWithPeer(peerID)
+	sm.verifyStateWithPeer(peerID, client)
 }
 
 // createBloomFilter creates a bloom filter of the given keys
-func (sm *SyncManager) createBloomFilter(keysMap map[string]bool) []byte {
-	// In a real implementation, this would create a bloom filter
-	// For now, we'll just return a placeholder
-	log.Printf("Creating bloom filter with %d keys", len(keysMap))
-	return []byte("simulated-bloom-filter")
-}
+func (sm *SyncManager) createBloomFilter(keysMap map[string]bool) ([]byte, error) {
+	n := uint(len(keysMap)) // number of items
+	fpRate := 0.01          // false positive rate
+	filter := bloom.NewWithEstimates(n, fpRate)
 
-// simulateTransactionBatch simulates getting a batch of transactions from a peer
-// In a real implementation, this would be replaced with actual RPC calls
-func (sm *SyncManager) simulateTransactionBatch(peerID string, batchNum, batchSize int) []TransactionData {
-	// This is a simulation function for demonstration purposes
-	// In a real implementation, this data would come from the peer via RPC
-
-	// For demonstration, we'll return an empty batch after the first one
-	if batchNum > 0 {
-		return []TransactionData{}
+	for key, _ := range keysMap {
+		filter.Add([]byte(key))
 	}
 
-	// Simulate 3 transactions in the first batch
-	simulatedData := []TransactionData{
-		{
-			Key:       fmt.Sprintf("key_from_%s_1", peerID),
-			Value:     fmt.Sprintf("value_from_%s_1", peerID),
-			Timestamp: time.Now().UnixNano(),
-		},
-		{
-			Key:       fmt.Sprintf("key_from_%s_2", peerID),
-			Value:     fmt.Sprintf("value_from_%s_2", peerID),
-			Timestamp: time.Now().UnixNano(),
-		},
-		{
-			Key:       fmt.Sprintf("key_from_%s_3", peerID),
-			Value:     fmt.Sprintf("value_from_%s_3", peerID),
-			Timestamp: time.Now().UnixNano(),
-		},
+	var buf bytes.Buffer
+	encoder := gob.NewEncoder(&buf)
+	err := encoder.Encode(filter)
+	if err != nil {
+		return nil, err
 	}
 
-	log.Printf("Simulated batch %d from peer %s with %d transactions",
-		batchNum, peerID, len(simulatedData))
-
-	return simulatedData
-}
-
-// TransactionData represents a key-value transaction with metadata
-type TransactionData struct {
-	Key       string
-	Value     string
-	Timestamp int64
-	// In a real implementation, this would include vector clock and other metadata
+	return buf.Bytes(), nil
 }
 
 // processTransaction applies a transaction with conflict resolution
-func (sm *SyncManager) processTransaction(tx TransactionData, exists bool) (bool, error) {
+func (sm *SyncManager) processTransaction(tx *protoc.Transaction, exists bool) (bool, error) {
 	// If key doesn't exist, simply store the new value
 	if !exists {
 		err := sm.dataStore.StoreData(tx.Key, tx.Value)
@@ -311,17 +253,33 @@ func (sm *SyncManager) processTransaction(tx TransactionData, exists bool) (bool
 }
 
 // VerifyStateWithPeer verifies state consistency with a peer
-func (sm *SyncManager) VerifyStateWithPeer(peerID string) bool {
-	sm.mutex.RLock()
-	defer sm.mutex.RUnlock()
-
+func (sm *SyncManager) verifyStateWithPeer(peerID string, client protoc.TransactionServiceClient) bool {
 	// Get local Merkle root
 	localMerkleRoot := sm.dataStore.GetMerkleRoot()
 
-	// In a real implementation, we would use the VerifyState RPC
-	// For this example, we'll just return true
-	log.Printf("Would verify state with peer %s (Merkle root: %s)", peerID, localMerkleRoot)
-	return true
+	// Set timeout for the sync operation
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	defer cancel()
+
+	resp, err := client.VerifyState(ctx, &protoc.StateVerificationRequest{
+		NodeId:     sm.networkManager.nodeID,
+		MerkleRoot: localMerkleRoot,
+	})
+	if err != nil {
+		log.Printf("❌ Peer %s: VerifyState error: %v", peerID, err)
+		return false
+	}
+
+	log.Printf("%s Verify state with peer %s (Merkle root: %s Consistent: %t)", b(resp.Consistent), peerID, resp.MerkleRoot, resp.Consistent)
+	return resp.Consistent
+}
+
+func b(val bool) string {
+	if val {
+		return "❌"
+	} else {
+		return "✅"
+	}
 }
 
 // CheckpointManager manages checkpointing for fault tolerance

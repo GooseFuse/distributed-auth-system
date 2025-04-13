@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/GooseFuse/distributed-auth-system/protoc"
+	"github.com/willf/bloom"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
@@ -24,7 +25,7 @@ type TransactionService struct {
 }
 
 // NewTransactionService initializes a new TransactionService
-func NewTransactionService(nodeID string, dataStore *DataStore, consensusManager *ConsensusManager) *TransactionService {
+func NewTransactionService(nodeID string, dataStore *DataStore, consensusManager *ConsensusManager) protoc.TransactionServiceServer {
 	return &TransactionService{
 		dataStore:        dataStore,
 		consensusManager: consensusManager,
@@ -99,6 +100,8 @@ func (s *TransactionService) HandleTransaction(ctx context.Context, req *protoc.
 
 func (s *TransactionService) VerifyState(ctx context.Context, req *protoc.StateVerificationRequest) (svr *protoc.StateVerificationResponse, e error) {
 	localMerkleRoot := s.dataStore.GetMerkleRoot() // ← your local copy
+	log.Printf("🔁 VerifyState request from node %s | Peer Merkle: %s | Local Merkle: %s",
+		req.NodeId, req.MerkleRoot, localMerkleRoot)
 
 	isConsistent := req.MerkleRoot == localMerkleRoot
 
@@ -106,4 +109,53 @@ func (s *TransactionService) VerifyState(ctx context.Context, req *protoc.StateV
 		Consistent: isConsistent,
 		MerkleRoot: localMerkleRoot,
 	}, nil
+}
+
+func (s *TransactionService) SyncState(ctx context.Context, req *protoc.SyncRequest) (sr *protoc.SyncResponse, e error) {
+	localMerkleRoot := s.dataStore.GetMerkleRoot()
+
+	log.Printf("🔁 SyncState request from node %s | Peer Merkle: %s | Local Merkle: %s",
+		req.NodeId, req.MerkleRoot, localMerkleRoot)
+
+	// If Merkle roots are equal, no sync needed
+	if req.MerkleRoot == localMerkleRoot {
+		return &protoc.SyncResponse{
+			Success:    true,
+			MerkleRoot: localMerkleRoot,
+			// No missing transactions
+		}, nil
+	}
+
+	// In a real system, you'd use a bloom filter or Merkle diff — here we just brute-force it
+	var missing []*protoc.Transaction
+
+	allTxs, err := s.dataStore.GetAllTransactions()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, tx := range allTxs {
+		// Optional: use bloom filter to avoid sending keys peer already has
+		if !mightContainKey(req.BloomFilter, tx.Key) {
+			missing = append(missing, tx)
+		}
+	}
+
+	log.Printf("📤 Sending %d missing transactions to node %s", len(missing), req.NodeId)
+
+	return &protoc.SyncResponse{
+		Success:             true,
+		MerkleRoot:          localMerkleRoot,
+		MissingTransactions: missing,
+	}, nil
+}
+
+func mightContainKey(filterData []byte, key string) bool {
+	filter := bloom.New(1, 1) // dummy values, will be overwritten
+	err := filter.GobDecode(filterData)
+	if err != nil {
+		// fallback: if we can't decode, assume key might be present
+		return true
+	}
+	return filter.Test([]byte(key))
 }

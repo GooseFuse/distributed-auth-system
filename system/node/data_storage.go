@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/GooseFuse/distributed-auth-system/protoc"
 	"github.com/go-redis/redis/v8"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/util"
@@ -358,6 +359,25 @@ func (ds *DataStore) GetKeysByPrefix(prefix string) ([]string, error) {
 	}
 
 	return keys, nil
+}
+
+func (ds *DataStore) GetAllTransactions() ([]*protoc.Transaction, error) {
+	ds.mutex.RLock()
+	defer ds.mutex.RUnlock()
+
+	var txs []*protoc.Transaction
+	iter := ds.db.NewIterator(nil, nil)
+	defer iter.Release()
+
+	for iter.Next() {
+		txs = append(txs, &protoc.Transaction{Key: string(iter.Key()), Value: string(iter.Value())})
+	}
+
+	if err := iter.Error(); err != nil {
+		return nil, err
+	}
+
+	return txs, nil
 }
 
 // Close closes the database connections

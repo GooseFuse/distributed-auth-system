@@ -16,7 +16,7 @@ import (
 type NetworkManager struct {
 	nodeID          string
 	peerNodes       map[string]string // Map of node IDs to addresses
-	peerClients     map[string]*TransactionServiceClient
+	peerClients     map[string]protoc.TransactionServiceClient
 	pubSubManager   *PubSubManager
 	rateLimiter     *RateLimiter
 	securityManager *SecurityManager
@@ -31,7 +31,7 @@ func NewNetworkManager(nodeID string, securityManager *SecurityManager) *Network
 	return &NetworkManager{
 		nodeID:          nodeID,
 		peerNodes:       make(map[string]string),
-		peerClients:     make(map[string]*TransactionServiceClient),
+		peerClients:     make(map[string]protoc.TransactionServiceClient),
 		pubSubManager:   NewPubSubManager(),
 		rateLimiter:     NewRateLimiter(100, 1*time.Minute), // 100 requests per minute
 		securityManager: securityManager,
@@ -102,23 +102,23 @@ func (nm *NetworkManager) ConnectToPeer(peerID string, peerAddr string) {
 
 	conn, err := grpc.NewClient(peerAddr, opts...)
 	if err != nil {
-		log.Printf("Failed to connect to peer %s at %s: %v", peerID, peerAddr, err)
+		log.Printf("Failed to create channel to peer %s at %s: %v", peerID, peerAddr, err)
 		return
 	}
 
 	// Create client
-	nm.peerClients[peerID] = NewTransactionServiceClient(conn)
+	nm.peerClients[peerID] = protoc.NewTransactionServiceClient(conn)
 
-	log.Printf("Connected to peer %s at %s", peerID, peerAddr)
+	log.Printf("Connect to peer %s at %s state: %s", peerID, peerAddr, conn.GetState().String())
 }
 
 // GetPeerClients returns a map of peer clients
-func (nm *NetworkManager) GetPeerClients() map[string]*TransactionServiceClient {
+func (nm *NetworkManager) GetPeerClients() map[string]protoc.TransactionServiceClient {
 	nm.mutex.RLock()
 	defer nm.mutex.RUnlock()
 
 	// Create a copy of the map to avoid concurrent access issues
-	clients := make(map[string]*TransactionServiceClient)
+	clients := make(map[string]protoc.TransactionServiceClient)
 	for id, client := range nm.peerClients {
 		clients[id] = client
 	}
@@ -138,7 +138,7 @@ func (nm *NetworkManager) BroadcastTransaction(key, value string) {
 
 	// Broadcast to all peers
 	for peerID, client := range nm.peerClients {
-		go func(id string, c *TransactionServiceClient) {
+		go func(id string, c protoc.TransactionServiceClient) {
 			ctx, cancel := context.WithTimeout(nm.ctx, 5*time.Second)
 			defer cancel()
 
