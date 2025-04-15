@@ -197,7 +197,7 @@ func (sm *SyncManager) createBloomFilter(keysMap map[string]bool) ([]byte, error
 	fpRate := 0.01          // false positive rate
 	filter := bloom.NewWithEstimates(n, fpRate)
 
-	for key, _ := range keysMap {
+	for key := range keysMap {
 		filter.Add([]byte(key))
 	}
 
@@ -272,9 +272,9 @@ func (sm *SyncManager) verifyStateWithPeer(peerID string, client protoc.Transact
 
 	log.Printf("%s Verify state with peer %s (Merkle root: %s Consistent: %t)", b(resp.Consistent), peerID, resp.MerkleRoot, resp.Consistent)
 
-	if !resp.Consistent {
-		//resp, err := client.AppendEntries(ctx, &protoc.AppendEntriesRequest{Term: })
-	}
+	/*if !resp.Consistent {
+		_, _ = client.AppendEntries(ctx, &protoc.AppendEntriesRequest{})
+	}*/
 
 	return resp.Consistent
 }

@@ -7,7 +7,6 @@ import (
 	"log"
 	"net"
 	"path/filepath"
-	"sync"
 
 	"github.com/GooseFuse/distributed-auth-system/protoc"
 	"github.com/willf/bloom"
@@ -22,7 +21,7 @@ type TransactionService struct {
 	dataStore        *DataStore
 	consensusManager *ConsensusManager
 	nodeID           string
-	mutex            sync.RWMutex
+	//mutex            sync.RWMutex
 }
 
 // NewTransactionService initializes a new TransactionService
@@ -127,7 +126,6 @@ func (s *TransactionService) SyncState(ctx context.Context, req *protoc.SyncRequ
 		}, nil
 	}
 
-	// In a real system, you'd use a bloom filter or Merkle diff — here we just brute-force it
 	var missing []*protoc.Transaction
 
 	allTxs, err := s.dataStore.GetAllTransactions()
@@ -136,7 +134,7 @@ func (s *TransactionService) SyncState(ctx context.Context, req *protoc.SyncRequ
 	}
 
 	for _, tx := range allTxs {
-		// Optional: use bloom filter to avoid sending keys peer already has
+		// Use bloom filter to avoid sending keys peer already has
 		if !mightContainKey(req.BloomFilter, tx.Key) {
 			missing = append(missing, tx)
 		}

@@ -73,8 +73,6 @@ type RaftNode struct {
 
 // NewRaftNode creates a new Raft node
 func NewRaftNode(config RaftConfig, dataStore *DataStore, transactionHandler func([]byte) error) *RaftNode {
-	rand.Seed(time.Now().UnixNano())
-
 	node := &RaftNode{
 		config:             config,
 		currentTerm:        0,
@@ -521,7 +519,8 @@ func (rn *RaftNode) GetState() (int, bool) {
 
 // randomTimeout generates a random timeout between min and max milliseconds
 func randomTimeout(min, max int) time.Duration {
-	return time.Duration(min+rand.Intn(max-min)) * time.Millisecond
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return time.Duration(min+rng.Intn(max-min)) * time.Millisecond
 }
 
 // min returns the minimum of two integers
