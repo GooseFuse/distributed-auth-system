@@ -10,6 +10,7 @@ services:
       - redis-data:/data
 
   auth-node-1:
+    image: distributed-auth-system:latest
     build: .
     container_name: auth-node-1
     environment:
@@ -23,6 +24,7 @@ services:
       - redis
 
   auth-node-2:
+    image: distributed-auth-system:latest
     build: .
     container_name: auth-node-2
     environment:
@@ -36,6 +38,7 @@ services:
       - redis
 
   auth-node-3:
+    image: distributed-auth-system:latest
     build: .
     container_name: auth-node-3
     environment:
@@ -49,6 +52,7 @@ services:
       - redis
 
   demo-node:
+    image: distributed-auth-system-demo-client:latest
     build: ./client/
     container_name: demo-node
     depends_on:

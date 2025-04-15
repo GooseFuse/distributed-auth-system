@@ -56,3 +56,5 @@ temp/
 
 # Environment variables
 .env
+
+/secrets
