@@ -1,4 +1,4 @@
-package node
+package raft
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/GooseFuse/distributed-auth-system/protoc"
+	"github.com/GooseFuse/distributed-auth-system/system/datastore"
 	"github.com/willf/bloom"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -18,14 +19,14 @@ import (
 // TransactionService defines the gRPC service for handling transactions
 type TransactionService struct {
 	protoc.UnimplementedTransactionServiceServer
-	dataStore        *DataStore
+	dataStore        *datastore.DataStore
 	consensusManager *ConsensusManager
 	nodeID           string
 	//mutex            sync.RWMutex
 }
 
 // NewTransactionService initializes a new TransactionService
-func NewTransactionService(nodeID string, dataStore *DataStore, consensusManager *ConsensusManager) protoc.TransactionServiceServer {
+func NewTransactionService(nodeID string, dataStore *datastore.DataStore, consensusManager *ConsensusManager) protoc.TransactionServiceServer {
 	return &TransactionService{
 		dataStore:        dataStore,
 		consensusManager: consensusManager,
@@ -34,7 +35,7 @@ func NewTransactionService(nodeID string, dataStore *DataStore, consensusManager
 }
 
 // StartServer starts the gRPC server
-func StartServer(nodeID string, port string, dataStore *DataStore, consensusManager *ConsensusManager, useTLS bool, certDir string) {
+func StartServer(nodeID string, port string, dataStore *datastore.DataStore, consensusManager *ConsensusManager, useTLS bool, certDir string) {
 	var opts []grpc.ServerOption
 
 	if useTLS {
@@ -79,9 +80,18 @@ func (s *TransactionService) HandleTransaction(ctx context.Context, req *protoc.
 
 	// If this node is not the leader, forward to leader (in a real implementation)
 	if !s.consensusManager.IsLeader() {
-		log.Printf("Not the leader, would forward to leader in a real implementation")
-		// In a real implementation, we would forward to the leader
-		// For this example, we'll just handle it locally
+		log.Printf("Not the leader, forward to leader...")
+		leader := s.consensusManager.GetLeader()
+		if leader == "" {
+			log.Printf("Leader is not selected yet, dropping...")
+			return &protoc.TransactionResponse{
+				Success: false,
+			}, nil
+		} else {
+			log.Printf("Leader: %s", leader)
+			log.Printf("Client: %v", s.consensusManager.raftNode.peerClients[leader])
+			return s.consensusManager.raftNode.peerClients[leader].HandleTransaction(ctx, req)
+		}
 	}
 
 	// Propose transaction to the consensus mechanism

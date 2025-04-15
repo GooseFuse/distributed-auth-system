@@ -1,4 +1,4 @@
-package node
+package network
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/GooseFuse/distributed-auth-system/protoc"
+	"github.com/GooseFuse/distributed-auth-system/system/security"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
@@ -19,14 +20,18 @@ type NetworkManager struct {
 	peerClients     map[string]protoc.TransactionServiceClient
 	pubSubManager   *PubSubManager
 	rateLimiter     *RateLimiter
-	securityManager *SecurityManager
+	securityManager *security.SecurityManager
 	mutex           sync.RWMutex
 	ctx             context.Context
 	cancel          context.CancelFunc
 }
 
+func (n *NetworkManager) GetNodeId() string {
+	return n.nodeID
+}
+
 // NewNetworkManager creates a new NetworkManager
-func NewNetworkManager(nodeID string, securityManager *SecurityManager) *NetworkManager {
+func NewNetworkManager(nodeID string, securityManager *security.SecurityManager) *NetworkManager {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &NetworkManager{
 		nodeID:          nodeID,

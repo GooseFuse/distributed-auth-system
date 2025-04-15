@@ -1,4 +1,4 @@
-package node
+package raft
 
 import (
 	"bytes"
@@ -13,13 +13,15 @@ import (
 	"time"
 
 	"github.com/GooseFuse/distributed-auth-system/protoc"
+	"github.com/GooseFuse/distributed-auth-system/system/datastore"
+	"github.com/GooseFuse/distributed-auth-system/system/interfaces"
 	"github.com/willf/bloom"
 )
 
 // SyncManager manages state synchronization between nodes
 type SyncManager struct {
-	dataStore      *DataStore
-	networkManager *NetworkManager
+	dataStore      *datastore.DataStore
+	networkManager interfaces.NetworkManagerI
 	mutex          sync.RWMutex
 	ctx            context.Context
 	cancel         context.CancelFunc
@@ -27,7 +29,7 @@ type SyncManager struct {
 }
 
 // NewSyncManager creates a new SyncManager
-func NewSyncManager(dataStore *DataStore, networkManager *NetworkManager) *SyncManager {
+func NewSyncManager(dataStore *datastore.DataStore, networkManager interfaces.NetworkManagerI) *SyncManager {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &SyncManager{
 		dataStore:      dataStore,
@@ -130,7 +132,7 @@ func (sm *SyncManager) syncWithPeer(peerID string, client protoc.TransactionServ
 	defer cancel()
 
 	resp, err := client.SyncState(ctx, &protoc.SyncRequest{
-		NodeId:     sm.networkManager.nodeID,
+		NodeId:     sm.networkManager.GetNodeId(),
 		MerkleRoot: localMerkleRoot,
 	})
 	if err != nil {
@@ -262,7 +264,7 @@ func (sm *SyncManager) verifyStateWithPeer(peerID string, client protoc.Transact
 	defer cancel()
 
 	resp, err := client.VerifyState(ctx, &protoc.StateVerificationRequest{
-		NodeId:     sm.networkManager.nodeID,
+		NodeId:     sm.networkManager.GetNodeId(),
 		MerkleRoot: localMerkleRoot,
 	})
 	if err != nil {
@@ -289,7 +291,7 @@ func b(val bool) string {
 
 // CheckpointManager manages checkpointing for fault tolerance
 type CheckpointManager struct {
-	dataStore      *DataStore
+	dataStore      *datastore.DataStore
 	checkpointDir  string
 	interval       time.Duration
 	lastCheckpoint time.Time
@@ -306,7 +308,7 @@ type CheckpointData struct {
 }
 
 // NewCheckpointManager creates a new CheckpointManager
-func NewCheckpointManager(dataStore *DataStore, checkpointDir string, interval time.Duration) *CheckpointManager {
+func NewCheckpointManager(dataStore *datastore.DataStore, checkpointDir string, interval time.Duration) *CheckpointManager {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &CheckpointManager{
 		dataStore:      dataStore,

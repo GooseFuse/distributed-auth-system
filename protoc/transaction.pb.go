@@ -106,6 +106,66 @@ func (x *Transaction) GetTimestamp() int64 {
 	return 0
 }
 
+type LogEntry struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Term          int32                  `protobuf:"varint,1,opt,name=term,proto3" json:"term,omitempty"`
+	Index         int32                  `protobuf:"varint,2,opt,name=index,proto3" json:"index,omitempty"`
+	Command       *Transaction           `protobuf:"bytes,3,opt,name=command,proto3" json:"command,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LogEntry) Reset() {
+	*x = LogEntry{}
+	mi := &file_transaction_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LogEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LogEntry) ProtoMessage() {}
+
+func (x *LogEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_transaction_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LogEntry.ProtoReflect.Descriptor instead.
+func (*LogEntry) Descriptor() ([]byte, []int) {
+	return file_transaction_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *LogEntry) GetTerm() int32 {
+	if x != nil {
+		return x.Term
+	}
+	return 0
+}
+
+func (x *LogEntry) GetIndex() int32 {
+	if x != nil {
+		return x.Index
+	}
+	return 0
+}
+
+func (x *LogEntry) GetCommand() *Transaction {
+	if x != nil {
+		return x.Command
+	}
+	return nil
+}
+
 // TransactionRequest represents a request to handle a transaction
 type TransactionRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -116,7 +176,7 @@ type TransactionRequest struct {
 
 func (x *TransactionRequest) Reset() {
 	*x = TransactionRequest{}
-	mi := &file_transaction_proto_msgTypes[1]
+	mi := &file_transaction_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -128,7 +188,7 @@ func (x *TransactionRequest) String() string {
 func (*TransactionRequest) ProtoMessage() {}
 
 func (x *TransactionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[1]
+	mi := &file_transaction_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -141,7 +201,7 @@ func (x *TransactionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransactionRequest.ProtoReflect.Descriptor instead.
 func (*TransactionRequest) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{1}
+	return file_transaction_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *TransactionRequest) GetTransaction() *Transaction {
@@ -163,7 +223,7 @@ type TransactionResponse struct {
 
 func (x *TransactionResponse) Reset() {
 	*x = TransactionResponse{}
-	mi := &file_transaction_proto_msgTypes[2]
+	mi := &file_transaction_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -175,7 +235,7 @@ func (x *TransactionResponse) String() string {
 func (*TransactionResponse) ProtoMessage() {}
 
 func (x *TransactionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[2]
+	mi := &file_transaction_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -188,7 +248,7 @@ func (x *TransactionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransactionResponse.ProtoReflect.Descriptor instead.
 func (*TransactionResponse) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{2}
+	return file_transaction_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *TransactionResponse) GetSuccess() bool {
@@ -219,7 +279,7 @@ type AppendEntriesRequest struct {
 	LeaderId      string                 `protobuf:"bytes,2,opt,name=leader_id,json=leaderId,proto3" json:"leader_id,omitempty"`
 	PrevLogIndex  int32                  `protobuf:"varint,3,opt,name=prev_log_index,json=prevLogIndex,proto3" json:"prev_log_index,omitempty"`
 	PrevLogTerm   int32                  `protobuf:"varint,4,opt,name=prev_log_term,json=prevLogTerm,proto3" json:"prev_log_term,omitempty"`
-	Entries       []*Transaction         `protobuf:"bytes,5,rep,name=entries,proto3" json:"entries,omitempty"`
+	Entries       []*LogEntry            `protobuf:"bytes,5,rep,name=entries,proto3" json:"entries,omitempty"`
 	LeaderCommit  int32                  `protobuf:"varint,6,opt,name=leader_commit,json=leaderCommit,proto3" json:"leader_commit,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -227,7 +287,7 @@ type AppendEntriesRequest struct {
 
 func (x *AppendEntriesRequest) Reset() {
 	*x = AppendEntriesRequest{}
-	mi := &file_transaction_proto_msgTypes[3]
+	mi := &file_transaction_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -239,7 +299,7 @@ func (x *AppendEntriesRequest) String() string {
 func (*AppendEntriesRequest) ProtoMessage() {}
 
 func (x *AppendEntriesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[3]
+	mi := &file_transaction_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -252,7 +312,7 @@ func (x *AppendEntriesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AppendEntriesRequest.ProtoReflect.Descriptor instead.
 func (*AppendEntriesRequest) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{3}
+	return file_transaction_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *AppendEntriesRequest) GetTerm() int32 {
@@ -283,7 +343,7 @@ func (x *AppendEntriesRequest) GetPrevLogTerm() int32 {
 	return 0
 }
 
-func (x *AppendEntriesRequest) GetEntries() []*Transaction {
+func (x *AppendEntriesRequest) GetEntries() []*LogEntry {
 	if x != nil {
 		return x.Entries
 	}
@@ -308,7 +368,7 @@ type AppendEntriesResponse struct {
 
 func (x *AppendEntriesResponse) Reset() {
 	*x = AppendEntriesResponse{}
-	mi := &file_transaction_proto_msgTypes[4]
+	mi := &file_transaction_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -320,7 +380,7 @@ func (x *AppendEntriesResponse) String() string {
 func (*AppendEntriesResponse) ProtoMessage() {}
 
 func (x *AppendEntriesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[4]
+	mi := &file_transaction_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -333,7 +393,7 @@ func (x *AppendEntriesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AppendEntriesResponse.ProtoReflect.Descriptor instead.
 func (*AppendEntriesResponse) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{4}
+	return file_transaction_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *AppendEntriesResponse) GetTerm() int32 {
@@ -363,7 +423,7 @@ type RequestVoteRequest struct {
 
 func (x *RequestVoteRequest) Reset() {
 	*x = RequestVoteRequest{}
-	mi := &file_transaction_proto_msgTypes[5]
+	mi := &file_transaction_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -375,7 +435,7 @@ func (x *RequestVoteRequest) String() string {
 func (*RequestVoteRequest) ProtoMessage() {}
 
 func (x *RequestVoteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[5]
+	mi := &file_transaction_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -388,7 +448,7 @@ func (x *RequestVoteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequestVoteRequest.ProtoReflect.Descriptor instead.
 func (*RequestVoteRequest) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{5}
+	return file_transaction_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *RequestVoteRequest) GetTerm() int32 {
@@ -430,7 +490,7 @@ type RequestVoteResponse struct {
 
 func (x *RequestVoteResponse) Reset() {
 	*x = RequestVoteResponse{}
-	mi := &file_transaction_proto_msgTypes[6]
+	mi := &file_transaction_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -442,7 +502,7 @@ func (x *RequestVoteResponse) String() string {
 func (*RequestVoteResponse) ProtoMessage() {}
 
 func (x *RequestVoteResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[6]
+	mi := &file_transaction_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -455,7 +515,7 @@ func (x *RequestVoteResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequestVoteResponse.ProtoReflect.Descriptor instead.
 func (*RequestVoteResponse) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{6}
+	return file_transaction_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *RequestVoteResponse) GetTerm() int32 {
@@ -484,7 +544,7 @@ type SyncRequest struct {
 
 func (x *SyncRequest) Reset() {
 	*x = SyncRequest{}
-	mi := &file_transaction_proto_msgTypes[7]
+	mi := &file_transaction_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -496,7 +556,7 @@ func (x *SyncRequest) String() string {
 func (*SyncRequest) ProtoMessage() {}
 
 func (x *SyncRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[7]
+	mi := &file_transaction_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -509,7 +569,7 @@ func (x *SyncRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SyncRequest.ProtoReflect.Descriptor instead.
 func (*SyncRequest) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{7}
+	return file_transaction_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *SyncRequest) GetNodeId() string {
@@ -545,7 +605,7 @@ type SyncResponse struct {
 
 func (x *SyncResponse) Reset() {
 	*x = SyncResponse{}
-	mi := &file_transaction_proto_msgTypes[8]
+	mi := &file_transaction_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -557,7 +617,7 @@ func (x *SyncResponse) String() string {
 func (*SyncResponse) ProtoMessage() {}
 
 func (x *SyncResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[8]
+	mi := &file_transaction_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -570,7 +630,7 @@ func (x *SyncResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SyncResponse.ProtoReflect.Descriptor instead.
 func (*SyncResponse) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{8}
+	return file_transaction_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *SyncResponse) GetSuccess() bool {
@@ -605,7 +665,7 @@ type StateVerificationRequest struct {
 
 func (x *StateVerificationRequest) Reset() {
 	*x = StateVerificationRequest{}
-	mi := &file_transaction_proto_msgTypes[9]
+	mi := &file_transaction_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -617,7 +677,7 @@ func (x *StateVerificationRequest) String() string {
 func (*StateVerificationRequest) ProtoMessage() {}
 
 func (x *StateVerificationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[9]
+	mi := &file_transaction_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -630,7 +690,7 @@ func (x *StateVerificationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StateVerificationRequest.ProtoReflect.Descriptor instead.
 func (*StateVerificationRequest) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{9}
+	return file_transaction_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *StateVerificationRequest) GetNodeId() string {
@@ -658,7 +718,7 @@ type StateVerificationResponse struct {
 
 func (x *StateVerificationResponse) Reset() {
 	*x = StateVerificationResponse{}
-	mi := &file_transaction_proto_msgTypes[10]
+	mi := &file_transaction_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -670,7 +730,7 @@ func (x *StateVerificationResponse) String() string {
 func (*StateVerificationResponse) ProtoMessage() {}
 
 func (x *StateVerificationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[10]
+	mi := &file_transaction_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -683,7 +743,7 @@ func (x *StateVerificationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StateVerificationResponse.ProtoReflect.Descriptor instead.
 func (*StateVerificationResponse) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{10}
+	return file_transaction_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *StateVerificationResponse) GetConsistent() bool {
@@ -713,7 +773,7 @@ type NodeInfo struct {
 
 func (x *NodeInfo) Reset() {
 	*x = NodeInfo{}
-	mi := &file_transaction_proto_msgTypes[11]
+	mi := &file_transaction_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -725,7 +785,7 @@ func (x *NodeInfo) String() string {
 func (*NodeInfo) ProtoMessage() {}
 
 func (x *NodeInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[11]
+	mi := &file_transaction_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -738,7 +798,7 @@ func (x *NodeInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NodeInfo.ProtoReflect.Descriptor instead.
 func (*NodeInfo) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{11}
+	return file_transaction_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *NodeInfo) GetId() string {
@@ -779,7 +839,7 @@ type NetworkInfoRequest struct {
 
 func (x *NetworkInfoRequest) Reset() {
 	*x = NetworkInfoRequest{}
-	mi := &file_transaction_proto_msgTypes[12]
+	mi := &file_transaction_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -791,7 +851,7 @@ func (x *NetworkInfoRequest) String() string {
 func (*NetworkInfoRequest) ProtoMessage() {}
 
 func (x *NetworkInfoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[12]
+	mi := &file_transaction_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -804,7 +864,7 @@ func (x *NetworkInfoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NetworkInfoRequest.ProtoReflect.Descriptor instead.
 func (*NetworkInfoRequest) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{12}
+	return file_transaction_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *NetworkInfoRequest) GetRequestingNodeId() string {
@@ -826,7 +886,7 @@ type NetworkInfoResponse struct {
 
 func (x *NetworkInfoResponse) Reset() {
 	*x = NetworkInfoResponse{}
-	mi := &file_transaction_proto_msgTypes[13]
+	mi := &file_transaction_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -838,7 +898,7 @@ func (x *NetworkInfoResponse) String() string {
 func (*NetworkInfoResponse) ProtoMessage() {}
 
 func (x *NetworkInfoResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[13]
+	mi := &file_transaction_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -851,7 +911,7 @@ func (x *NetworkInfoResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NetworkInfoResponse.ProtoReflect.Descriptor instead.
 func (*NetworkInfoResponse) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{13}
+	return file_transaction_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *NetworkInfoResponse) GetNodes() []*NodeInfo {
@@ -887,7 +947,7 @@ type CheckpointRequest struct {
 
 func (x *CheckpointRequest) Reset() {
 	*x = CheckpointRequest{}
-	mi := &file_transaction_proto_msgTypes[14]
+	mi := &file_transaction_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -899,7 +959,7 @@ func (x *CheckpointRequest) String() string {
 func (*CheckpointRequest) ProtoMessage() {}
 
 func (x *CheckpointRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[14]
+	mi := &file_transaction_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -912,7 +972,7 @@ func (x *CheckpointRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckpointRequest.ProtoReflect.Descriptor instead.
 func (*CheckpointRequest) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{14}
+	return file_transaction_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *CheckpointRequest) GetNodeId() string {
@@ -948,7 +1008,7 @@ type CheckpointResponse struct {
 
 func (x *CheckpointResponse) Reset() {
 	*x = CheckpointResponse{}
-	mi := &file_transaction_proto_msgTypes[15]
+	mi := &file_transaction_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -960,7 +1020,7 @@ func (x *CheckpointResponse) String() string {
 func (*CheckpointResponse) ProtoMessage() {}
 
 func (x *CheckpointResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[15]
+	mi := &file_transaction_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -973,7 +1033,7 @@ func (x *CheckpointResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckpointResponse.ProtoReflect.Descriptor instead.
 func (*CheckpointResponse) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{15}
+	return file_transaction_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *CheckpointResponse) GetSuccess() bool {
@@ -1009,20 +1069,24 @@ const file_transaction_proto_rawDesc = "" +
 	"\tsignature\x18\x04 \x01(\fR\tsignature\x12\x1d\n" +
 	"\n" +
 	"public_key\x18\x05 \x01(\tR\tpublicKey\x12\x1c\n" +
-	"\ttimestamp\x18\x06 \x01(\x03R\ttimestamp\"K\n" +
+	"\ttimestamp\x18\x06 \x01(\x03R\ttimestamp\"c\n" +
+	"\bLogEntry\x12\x12\n" +
+	"\x04term\x18\x01 \x01(\x05R\x04term\x12\x14\n" +
+	"\x05index\x18\x02 \x01(\x05R\x05index\x12-\n" +
+	"\acommand\x18\x03 \x01(\v2\x13.protoc.TransactionR\acommand\"K\n" +
 	"\x12TransactionRequest\x125\n" +
 	"\vtransaction\x18\x01 \x01(\v2\x13.protoc.TransactionR\vtransaction\"u\n" +
 	"\x13TransactionResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12#\n" +
 	"\rerror_message\x18\x02 \x01(\tR\ferrorMessage\x12\x1f\n" +
 	"\vmerkle_root\x18\x03 \x01(\tR\n" +
-	"merkleRoot\"\xe5\x01\n" +
+	"merkleRoot\"\xe2\x01\n" +
 	"\x14AppendEntriesRequest\x12\x12\n" +
 	"\x04term\x18\x01 \x01(\x05R\x04term\x12\x1b\n" +
 	"\tleader_id\x18\x02 \x01(\tR\bleaderId\x12$\n" +
 	"\x0eprev_log_index\x18\x03 \x01(\x05R\fprevLogIndex\x12\"\n" +
-	"\rprev_log_term\x18\x04 \x01(\x05R\vprevLogTerm\x12-\n" +
-	"\aentries\x18\x05 \x03(\v2\x13.protoc.TransactionR\aentries\x12#\n" +
+	"\rprev_log_term\x18\x04 \x01(\x05R\vprevLogTerm\x12*\n" +
+	"\aentries\x18\x05 \x03(\v2\x10.protoc.LogEntryR\aentries\x12#\n" +
 	"\rleader_commit\x18\x06 \x01(\x05R\fleaderCommit\"E\n" +
 	"\x15AppendEntriesResponse\x12\x12\n" +
 	"\x04term\x18\x01 \x01(\x05R\x04term\x12\x18\n" +
@@ -1095,49 +1159,51 @@ func file_transaction_proto_rawDescGZIP() []byte {
 	return file_transaction_proto_rawDescData
 }
 
-var file_transaction_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_transaction_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_transaction_proto_goTypes = []any{
 	(*Transaction)(nil),               // 0: protoc.Transaction
-	(*TransactionRequest)(nil),        // 1: protoc.TransactionRequest
-	(*TransactionResponse)(nil),       // 2: protoc.TransactionResponse
-	(*AppendEntriesRequest)(nil),      // 3: protoc.AppendEntriesRequest
-	(*AppendEntriesResponse)(nil),     // 4: protoc.AppendEntriesResponse
-	(*RequestVoteRequest)(nil),        // 5: protoc.RequestVoteRequest
-	(*RequestVoteResponse)(nil),       // 6: protoc.RequestVoteResponse
-	(*SyncRequest)(nil),               // 7: protoc.SyncRequest
-	(*SyncResponse)(nil),              // 8: protoc.SyncResponse
-	(*StateVerificationRequest)(nil),  // 9: protoc.StateVerificationRequest
-	(*StateVerificationResponse)(nil), // 10: protoc.StateVerificationResponse
-	(*NodeInfo)(nil),                  // 11: protoc.NodeInfo
-	(*NetworkInfoRequest)(nil),        // 12: protoc.NetworkInfoRequest
-	(*NetworkInfoResponse)(nil),       // 13: protoc.NetworkInfoResponse
-	(*CheckpointRequest)(nil),         // 14: protoc.CheckpointRequest
-	(*CheckpointResponse)(nil),        // 15: protoc.CheckpointResponse
+	(*LogEntry)(nil),                  // 1: protoc.LogEntry
+	(*TransactionRequest)(nil),        // 2: protoc.TransactionRequest
+	(*TransactionResponse)(nil),       // 3: protoc.TransactionResponse
+	(*AppendEntriesRequest)(nil),      // 4: protoc.AppendEntriesRequest
+	(*AppendEntriesResponse)(nil),     // 5: protoc.AppendEntriesResponse
+	(*RequestVoteRequest)(nil),        // 6: protoc.RequestVoteRequest
+	(*RequestVoteResponse)(nil),       // 7: protoc.RequestVoteResponse
+	(*SyncRequest)(nil),               // 8: protoc.SyncRequest
+	(*SyncResponse)(nil),              // 9: protoc.SyncResponse
+	(*StateVerificationRequest)(nil),  // 10: protoc.StateVerificationRequest
+	(*StateVerificationResponse)(nil), // 11: protoc.StateVerificationResponse
+	(*NodeInfo)(nil),                  // 12: protoc.NodeInfo
+	(*NetworkInfoRequest)(nil),        // 13: protoc.NetworkInfoRequest
+	(*NetworkInfoResponse)(nil),       // 14: protoc.NetworkInfoResponse
+	(*CheckpointRequest)(nil),         // 15: protoc.CheckpointRequest
+	(*CheckpointResponse)(nil),        // 16: protoc.CheckpointResponse
 }
 var file_transaction_proto_depIdxs = []int32{
-	0,  // 0: protoc.TransactionRequest.transaction:type_name -> protoc.Transaction
-	0,  // 1: protoc.AppendEntriesRequest.entries:type_name -> protoc.Transaction
-	0,  // 2: protoc.SyncResponse.missing_transactions:type_name -> protoc.Transaction
-	11, // 3: protoc.NetworkInfoResponse.nodes:type_name -> protoc.NodeInfo
-	1,  // 4: protoc.TransactionService.HandleTransaction:input_type -> protoc.TransactionRequest
-	3,  // 5: protoc.TransactionService.AppendEntries:input_type -> protoc.AppendEntriesRequest
-	5,  // 6: protoc.TransactionService.RequestVote:input_type -> protoc.RequestVoteRequest
-	7,  // 7: protoc.TransactionService.SyncState:input_type -> protoc.SyncRequest
-	9,  // 8: protoc.TransactionService.VerifyState:input_type -> protoc.StateVerificationRequest
-	12, // 9: protoc.TransactionService.GetNetworkInfo:input_type -> protoc.NetworkInfoRequest
-	14, // 10: protoc.TransactionService.ManageCheckpoint:input_type -> protoc.CheckpointRequest
-	2,  // 11: protoc.TransactionService.HandleTransaction:output_type -> protoc.TransactionResponse
-	4,  // 12: protoc.TransactionService.AppendEntries:output_type -> protoc.AppendEntriesResponse
-	6,  // 13: protoc.TransactionService.RequestVote:output_type -> protoc.RequestVoteResponse
-	8,  // 14: protoc.TransactionService.SyncState:output_type -> protoc.SyncResponse
-	10, // 15: protoc.TransactionService.VerifyState:output_type -> protoc.StateVerificationResponse
-	13, // 16: protoc.TransactionService.GetNetworkInfo:output_type -> protoc.NetworkInfoResponse
-	15, // 17: protoc.TransactionService.ManageCheckpoint:output_type -> protoc.CheckpointResponse
-	11, // [11:18] is the sub-list for method output_type
-	4,  // [4:11] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	0,  // 0: protoc.LogEntry.command:type_name -> protoc.Transaction
+	0,  // 1: protoc.TransactionRequest.transaction:type_name -> protoc.Transaction
+	1,  // 2: protoc.AppendEntriesRequest.entries:type_name -> protoc.LogEntry
+	0,  // 3: protoc.SyncResponse.missing_transactions:type_name -> protoc.Transaction
+	12, // 4: protoc.NetworkInfoResponse.nodes:type_name -> protoc.NodeInfo
+	2,  // 5: protoc.TransactionService.HandleTransaction:input_type -> protoc.TransactionRequest
+	4,  // 6: protoc.TransactionService.AppendEntries:input_type -> protoc.AppendEntriesRequest
+	6,  // 7: protoc.TransactionService.RequestVote:input_type -> protoc.RequestVoteRequest
+	8,  // 8: protoc.TransactionService.SyncState:input_type -> protoc.SyncRequest
+	10, // 9: protoc.TransactionService.VerifyState:input_type -> protoc.StateVerificationRequest
+	13, // 10: protoc.TransactionService.GetNetworkInfo:input_type -> protoc.NetworkInfoRequest
+	15, // 11: protoc.TransactionService.ManageCheckpoint:input_type -> protoc.CheckpointRequest
+	3,  // 12: protoc.TransactionService.HandleTransaction:output_type -> protoc.TransactionResponse
+	5,  // 13: protoc.TransactionService.AppendEntries:output_type -> protoc.AppendEntriesResponse
+	7,  // 14: protoc.TransactionService.RequestVote:output_type -> protoc.RequestVoteResponse
+	9,  // 15: protoc.TransactionService.SyncState:output_type -> protoc.SyncResponse
+	11, // 16: protoc.TransactionService.VerifyState:output_type -> protoc.StateVerificationResponse
+	14, // 17: protoc.TransactionService.GetNetworkInfo:output_type -> protoc.NetworkInfoResponse
+	16, // 18: protoc.TransactionService.ManageCheckpoint:output_type -> protoc.CheckpointResponse
+	12, // [12:19] is the sub-list for method output_type
+	5,  // [5:12] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_transaction_proto_init() }
@@ -1151,7 +1217,7 @@ func file_transaction_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_transaction_proto_rawDesc), len(file_transaction_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   16,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

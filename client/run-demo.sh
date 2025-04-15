@@ -1,5 +1,6 @@
 #!/bin/bash
 
+sleep 60
 echo "=== Client Demo ==="
 
 echo "1. Storing user data..."

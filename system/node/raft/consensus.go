@@ -1,4 +1,4 @@
-package node
+package raft
 
 import (
 	"context"
@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/GooseFuse/distributed-auth-system/protoc"
+	"github.com/GooseFuse/distributed-auth-system/system/datastore"
+	"github.com/GooseFuse/distributed-auth-system/system/interfaces"
 )
 
 // RaftState represents the state of a node in the Raft consensus algorithm
@@ -24,30 +26,14 @@ const (
 	Leader
 )
 
-// LogEntry represents an entry in the Raft log
-type LogEntry struct {
-	Term    int    // Term when entry was received by leader
-	Index   int    // Position in the log
-	Command []byte // Command to be applied to the state machine
-}
-
-// RaftConfig contains configuration parameters for the Raft consensus algorithm
-type RaftConfig struct {
-	NodeID             string            // Unique identifier for this node
-	PeerAddresses      map[string]string // Map of node IDs to network addresses
-	ElectionTimeoutMin int               // Minimum election timeout in milliseconds
-	ElectionTimeoutMax int               // Maximum election timeout in milliseconds
-	HeartbeatInterval  int               // Heartbeat interval in milliseconds
-}
-
 // RaftNode represents a node in the Raft consensus algorithm
 type RaftNode struct {
 	config RaftConfig
 
 	// Persistent state on all servers
-	currentTerm int        // Latest term server has seen
-	votedFor    string     // CandidateID that received vote in current term (or empty if none)
-	log         []LogEntry // Log entries
+	currentTerm int               // Latest term server has seen
+	votedFor    string            // CandidateID that received vote in current term (or empty if none)
+	log         []protoc.LogEntry // Log entries
 
 	// Volatile state on all servers
 	commitIndex int // Index of highest log entry known to be committed
@@ -62,22 +48,22 @@ type RaftNode struct {
 	electionTimeout    time.Duration
 	lastHeartbeat      time.Time
 	leaderID           string
-	applyCh            chan LogEntry
+	applyCh            chan protoc.LogEntry
 	stopCh             chan struct{}
 	peerClients        map[string]protoc.TransactionServiceClient
-	dataStore          *DataStore
+	dataStore          *datastore.DataStore
 	transactionHandler func([]byte) error
 
 	mutex sync.RWMutex
 }
 
 // NewRaftNode creates a new Raft node
-func NewRaftNode(config RaftConfig, dataStore *DataStore, transactionHandler func([]byte) error) *RaftNode {
+func NewRaftNode(config RaftConfig, dataStore *datastore.DataStore, transactionHandler func([]byte) error) *RaftNode {
 	node := &RaftNode{
 		config:             config,
 		currentTerm:        0,
 		votedFor:           "",
-		log:                make([]LogEntry, 0),
+		log:                make([]protoc.LogEntry, 0),
 		commitIndex:        -1,
 		lastApplied:        -1,
 		nextIndex:          make(map[string]int),
@@ -86,7 +72,7 @@ func NewRaftNode(config RaftConfig, dataStore *DataStore, transactionHandler fun
 		electionTimeout:    randomTimeout(config.ElectionTimeoutMin, config.ElectionTimeoutMax),
 		lastHeartbeat:      time.Now(),
 		leaderID:           "",
-		applyCh:            make(chan LogEntry, 100),
+		applyCh:            make(chan protoc.LogEntry, 100),
 		stopCh:             make(chan struct{}),
 		peerClients:        make(map[string]protoc.TransactionServiceClient),
 		dataStore:          dataStore,
@@ -204,7 +190,7 @@ func (rn *RaftNode) startElection() {
 
 	// Only become leader if still a candidate and term hasn't changed
 	if rn.state == Candidate && rn.currentTerm == currentTerm && votesReceived >= votesNeeded {
-		fmt.Printf("Node %s won election for term %d with %d votes\n", rn.config.NodeID, currentTerm, votesReceived)
+		fmt.Printf("Node %s is the new leader, won election for term %d with %d votes\n", rn.config.NodeID, currentTerm, votesReceived)
 		rn.becomeLeader()
 	}
 }
@@ -253,7 +239,7 @@ func (rn *RaftNode) sendHeartbeats() {
 			}
 
 			// Get log entries to send
-			entries := make([]LogEntry, 0)
+			entries := make([]*protoc.LogEntry, 0)
 			if nextIdx < len(rn.log) {
 				entries = rn.log[nextIdx:]
 			}
@@ -333,7 +319,7 @@ func (rn *RaftNode) ProposeCommand(command []byte) (bool, error) {
 	}
 
 	// Append to local log
-	entry := LogEntry{
+	entry := protoc.LogEntry{
 		Term:    rn.currentTerm,
 		Index:   len(rn.log),
 		Command: command,
@@ -365,26 +351,41 @@ func (rn *RaftNode) RequestVote(client protoc.TransactionServiceClient, term, la
 		return false, err
 	}
 
-	// Update term if needed
-	if resp.Term > int32(rn.currentTerm) {
-		rn.currentTerm = int(resp.Term)
-		rn.votedFor = "" // reset vote
-		rn.state = Follower
-	}
+	rn.updateTerm(resp.Term)
 
 	return resp.VoteGranted, nil
 }
 
 // appendEntries sends an AppendEntries RPC to a peer
-func (rn *RaftNode) appendEntries(client protoc.TransactionServiceClient, term, prevLogIndex, prevLogTerm int, entries []LogEntry, leaderCommit int) (bool, error) {
-	// In a real implementation, this would use gRPC to send the request
-	// For this example, we'll simulate the RPC
+func (rn *RaftNode) appendEntries(client protoc.TransactionServiceClient, term, prevLogIndex, prevLogTerm int, entries []*protoc.LogEntry, leaderCommit int) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
 
-	// Simulate network delay
-	time.Sleep(time.Duration(rand.Intn(50)) * time.Millisecond)
+	req := &protoc.AppendEntriesRequest{
+		Term:         int32(term),
+		LeaderId:     rn.leaderID,
+		PrevLogIndex: int32(prevLogIndex),
+		PrevLogTerm:  int32(prevLogTerm),
+		Entries:      entries,
+	}
 
-	// Simulate response
-	return true, nil
+	resp, err := client.AppendEntries(ctx, req)
+	if err != nil {
+		return false, err
+	}
+
+	rn.updateTerm(resp.Term)
+
+	return resp.Success, nil
+}
+
+func (rn *RaftNode) updateTerm(term int32) {
+	if term > int32(rn.currentTerm) {
+		rn.currentTerm = int(term)
+		rn.state = Follower
+		rn.votedFor = ""
+		log.Printf("🔄 Stepping down: higher term seen from peer (%d > %d)", term, rn.currentTerm)
+	}
 }
 
 // HandleRequestVote handles a RequestVote RPC from a peer
@@ -427,7 +428,7 @@ func (rn *RaftNode) HanldeRequestVote(candidateID string, term, lastLogIndex, la
 }
 
 // HandleAppendEntries handles an AppendEntries RPC from a peer
-func (rn *RaftNode) HandleAppendEntries(leaderID string, term, prevLogIndex, prevLogTerm int, entries []LogEntry, leaderCommit int) (int, bool) {
+func (rn *RaftNode) HandleAppendEntries(leaderID string, term, prevLogIndex, prevLogTerm int, entries []protoc.LogEntry, leaderCommit int) (int, bool) {
 	rn.mutex.Lock()
 	defer rn.mutex.Unlock()
 
@@ -534,13 +535,13 @@ func min(a, b int) int {
 // ConsensusManager manages the Raft consensus algorithm
 type ConsensusManager struct {
 	raftNode  *RaftNode
-	dataStore *DataStore
+	dataStore *datastore.DataStore
 	ctx       context.Context
 	cancel    context.CancelFunc
 }
 
 // NewConsensusManager creates a new ConsensusManager
-func NewConsensusManager(config RaftConfig, dataStore *DataStore, networkManager *NetworkManager) *ConsensusManager {
+func NewConsensusManager(config RaftConfig, dataStore *datastore.DataStore, networkManager interfaces.NetworkManagerI) *ConsensusManager {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// Create a transaction handler function

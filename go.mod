@@ -3,7 +3,7 @@ module github.com/GooseFuse/distributed-auth-system
 go 1.23.2
 
 require (
-	github.com/GooseFuse/distributed-auth-system/protoc v0.0.0-20250411233547-c07a6a0bf10e
+	github.com/GooseFuse/distributed-auth-system/protoc v0.0.0-20250415200842-a8c7cf7ab7c2
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/syndtr/goleveldb v1.0.0
 	github.com/willf/bloom v2.0.3+incompatible

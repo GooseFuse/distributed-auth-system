@@ -9,27 +9,41 @@ import (
 	"path/filepath"
 	"syscall"
 	"time"
+
+	"github.com/GooseFuse/distributed-auth-system/system/datastore"
+	"github.com/GooseFuse/distributed-auth-system/system/node/blockchain"
+	"github.com/GooseFuse/distributed-auth-system/system/node/raft"
 )
 
 type Node struct {
-	dbPath            string
-	nodesDir          string
-	config            *Config
-	raftConfig        *RaftConfig
-	dataStore         *DataStore
-	securityManager   *SecurityManager
-	networkManager    *NetworkManager
-	consensusManager  *ConsensusManager
-	syncManager       *SyncManager
-	checkpointManager *CheckpointManager
+	imp       NodeInterface
+	dbPath    string
+	nodesDir  string
+	config    *Config
+	dataStore *datastore.DataStore
 }
 
-func newNode(dbPath string, config *Config, raftConfig *RaftConfig) *Node {
-	return &Node{
-		dbPath:     dbPath,
-		config:     config,
-		raftConfig: raftConfig,
+type NodeType string
+
+const (
+	raftType       = "RAFT"
+	blockchainType = "BLOCKCHAIN"
+)
+
+func newNode(mode NodeType, dbPath string, config *Config) *Node {
+	n := &Node{
+		dbPath: dbPath,
+		config: config,
 	}
+
+	switch mode {
+	case raftType:
+		n.imp = raft.NewNode(config.NodeID, config.PeerAddresses, config.ElectionTimeoutMin, config.ElectionTimeoutMax, config.HeartbeatInterval, n.dataStore, config.UseTLS, dbPath, config.Port)
+	case blockchainType:
+		n.imp = &blockchain.Node{}
+
+	}
+	return n
 }
 
 func Create() {
@@ -37,7 +51,11 @@ func Create() {
 	nodeID := os.Getenv("NODE_ID")
 	redisAddr := os.Getenv("REDIS_URL")
 	port := os.Getenv("PORT")
-	//mode := os.Getenv("MODE")
+	mode := NodeType(os.Getenv("MODE"))
+
+	if mode == "" {
+		mode = raftType
+	}
 
 	// Parse command line flags
 	dbPath := flag.String("db", "./data", "Path to database")
@@ -60,16 +78,7 @@ func Create() {
 		},
 	}
 
-	// Initialize the Raft configuration
-	raftConfig := &RaftConfig{
-		NodeID:             config.NodeID,
-		PeerAddresses:      config.PeerAddresses,
-		ElectionTimeoutMin: config.ElectionTimeoutMin,
-		ElectionTimeoutMax: config.ElectionTimeoutMax,
-		HeartbeatInterval:  config.HeartbeatInterval,
-	}
-
-	node := newNode(*dbPath, config, raftConfig)
+	node := newNode(mode, *dbPath, config)
 	node.start()
 	defer node.stop()
 
@@ -86,46 +95,7 @@ func (n *Node) start() {
 	n.createNodesDir()
 	n.createDataDir()
 
-	var err error
-	// Initialize the data store
-	n.dataStore, err = NewDataStore(n.config.DBPath, n.config.RedisAddr)
-	if err != nil {
-		log.Fatalf("Failed to initialize data store: %v", err)
-	}
-
-	// Initialize the security manager
-	n.securityManager, err = NewSecurityManager(n.config.NodeID, n.getCertDir(), n.config.UseTLS)
-	if err != nil {
-		log.Fatalf("Failed to initialize security manager: %v", err)
-	}
-
-	// Initialize the network manager
-	n.networkManager = NewNetworkManager(n.config.NodeID, n.securityManager)
-
-	// Add peers to the network manager
-	for peerID, peerAddr := range n.config.PeerAddresses {
-		if peerID != n.config.NodeID {
-			n.networkManager.AddPeer(peerID, peerAddr)
-		}
-	}
-	// Start the network manager
-	n.networkManager.Start()
-
-	// Initialize the consensus manager
-	n.consensusManager = NewConsensusManager(*n.raftConfig, n.dataStore, n.networkManager)
-	n.consensusManager.Start()
-
-	// Initialize the sync manager
-	n.syncManager = NewSyncManager(n.dataStore, n.networkManager)
-	n.syncManager.Start()
-
-	// Initialize the checkpoint manager
-	checkpointDir := filepath.Join(n.config.DBPath, "checkpoints")
-	n.checkpointManager = NewCheckpointManager(n.dataStore, checkpointDir, 5*time.Minute)
-	n.checkpointManager.Start()
-
-	// Start the gRPC server in a separate goroutine
-	go StartServer(n.config.NodeID, n.config.Port, n.dataStore, n.consensusManager, n.config.UseTLS, n.getCertDir())
+	n.imp.Start()
 
 	// Log startup information
 	log.Printf("Node %s started successfully", n.config.NodeID)
@@ -136,15 +106,8 @@ func (n *Node) start() {
 	log.Printf("Connected to %d peers", len(n.config.PeerAddresses)-1)
 }
 
-func (n *Node) getCertDir() string {
-	return filepath.Join(n.config.DBPath, "certs")
-}
-
 func (n *Node) stop() {
-	n.checkpointManager.Stop()
-	n.syncManager.Stop()
-	n.consensusManager.Stop()
-	n.networkManager.Stop()
+	n.imp.Stop()
 	n.dataStore.Close()
 }
 

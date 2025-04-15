@@ -1,4 +1,4 @@
-package node
+package datastore
 
 import (
 	"context"
@@ -187,6 +187,11 @@ type DataStore struct {
 	bloomFilter *BloomFilter
 	ctx         context.Context
 	mutex       sync.RWMutex
+	dbPath      string
+}
+
+func (d *DataStore) GetDBPath() string {
+	return d.dbPath
 }
 
 // NewDataStore initializes a new DataStore
@@ -218,6 +223,7 @@ func NewDataStore(dbPath string, redisAddr string) (*DataStore, error) {
 		merkleTree:  merkleTree,
 		bloomFilter: bloomFilter,
 		ctx:         ctx,
+		dbPath:      dbPath,
 	}
 
 	// Initialize Merkle tree and Bloom filter with existing data
