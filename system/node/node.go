@@ -13,10 +13,11 @@ import (
 
 func Node() {
 	// Parse command line flags
-	nodeID := flag.String("node", "node1", "Node ID")
-	port := flag.String("port", ":50051", "Port to listen on")
+	nodeID := os.Getenv("NODE_ID")
+	redisAddr := os.Getenv("REDIS_URL")
+	port := os.Getenv("PORT")
+
 	dbPath := flag.String("db", "./data", "Path to database")
-	redisAddr := flag.String("redis", "localhost:6379", "Redis address")
 	useTLS := flag.Bool("tls", false, "Use TLS")
 	flag.Parse()
 
@@ -28,7 +29,7 @@ func Node() {
 	}
 
 	// Create the node-specific directory
-	dataDir := filepath.Join(nodesDir, *nodeID)
+	dataDir := filepath.Join(nodesDir, nodeID)
 	err = os.MkdirAll(dataDir, 0755)
 	if err != nil {
 		log.Fatalf("Failed to create node directory: %v", err)
@@ -36,18 +37,18 @@ func Node() {
 
 	// Initialize configuration
 	config := &Config{
-		NodeID:             *nodeID,
-		Port:               *port,
+		NodeID:             nodeID,
+		Port:               port,
 		DBPath:             dataDir,
-		RedisAddr:          *redisAddr,
+		RedisAddr:          redisAddr,
 		UseTLS:             *useTLS,
-		ElectionTimeoutMin: 150, // 150ms
-		ElectionTimeoutMax: 300, // 300ms
-		HeartbeatInterval:  50,  // 50ms
+		ElectionTimeoutMin: 15000, // 150ms
+		ElectionTimeoutMax: 30000, // 300ms
+		HeartbeatInterval:  50,    // 50ms
 		PeerAddresses: map[string]string{
-			"node1": "localhost:50051",
-			"node2": "localhost:50052",
-			"node3": "localhost:50053",
+			"node1": "auth-node-1:6333",
+			"node2": "auth-node-2:6333",
+			"node3": "auth-node-3:6333",
 		},
 	}
 
@@ -89,7 +90,7 @@ func Node() {
 	}
 
 	// Initialize the consensus manager
-	consensusManager := NewConsensusManager(raftConfig, dataStore)
+	consensusManager := NewConsensusManager(raftConfig, dataStore, networkManager)
 	consensusManager.Start()
 	defer consensusManager.Stop()
 

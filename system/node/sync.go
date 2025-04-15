@@ -6,7 +6,6 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -189,6 +188,7 @@ func (sm *SyncManager) syncWithPeer(peerID string, client protoc.TransactionServ
 	// Verify state consistency after sync
 	log.Printf("Verifying state consistency with peer %s", peerID)
 	sm.verifyStateWithPeer(peerID, client)
+
 }
 
 // createBloomFilter creates a bloom filter of the given keys
@@ -271,11 +271,16 @@ func (sm *SyncManager) verifyStateWithPeer(peerID string, client protoc.Transact
 	}
 
 	log.Printf("%s Verify state with peer %s (Merkle root: %s Consistent: %t)", b(resp.Consistent), peerID, resp.MerkleRoot, resp.Consistent)
+
+	if !resp.Consistent {
+		//resp, err := client.AppendEntries(ctx, &protoc.AppendEntriesRequest{Term: })
+	}
+
 	return resp.Consistent
 }
 
 func b(val bool) string {
-	if val {
+	if !val {
 		return "❌"
 	} else {
 		return "✅"
@@ -386,7 +391,7 @@ func (cm *CheckpointManager) CreateCheckpoint(checkpointID int64) error {
 
 	// Write checkpoint file
 	checkpointPath := filepath.Join(cm.checkpointDir, fmt.Sprintf("checkpoint_%d.json", checkpointID))
-	err = ioutil.WriteFile(checkpointPath, data, 0644)
+	err = os.WriteFile(checkpointPath, data, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to write checkpoint file: %w", err)
 	}
@@ -403,7 +408,7 @@ func (cm *CheckpointManager) RestoreFromCheckpoint(checkpointID int64) error {
 
 	// Read checkpoint file
 	checkpointPath := filepath.Join(cm.checkpointDir, fmt.Sprintf("checkpoint_%d.json", checkpointID))
-	data, err := ioutil.ReadFile(checkpointPath)
+	data, err := os.ReadFile(checkpointPath)
 	if err != nil {
 		return fmt.Errorf("failed to read checkpoint file: %w", err)
 	}
@@ -440,7 +445,7 @@ func (cm *CheckpointManager) ListCheckpoints() ([]int64, error) {
 	defer cm.mutex.RUnlock()
 
 	// Read checkpoint directory
-	files, err := ioutil.ReadDir(cm.checkpointDir)
+	files, err := os.ReadDir(cm.checkpointDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read checkpoint directory: %w", err)
 	}

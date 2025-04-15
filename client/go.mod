@@ -3,7 +3,7 @@ module github.com/GooseFuse/distributed-auth-system/client
 go 1.23.2
 
 require (
-	github.com/GooseFuse/distributed-auth-system v0.0.0
+	github.com/GooseFuse/distributed-auth-system/protoc v0.0.0-20250411233547-c07a6a0bf10e
 	google.golang.org/grpc v1.71.1
 )
 

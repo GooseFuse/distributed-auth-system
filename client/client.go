@@ -9,6 +9,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/GooseFuse/distributed-auth-system/protoc"
 	distributed_auth_system "github.com/GooseFuse/distributed-auth-system/protoc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -68,9 +69,11 @@ func storeData(ctx context.Context, client distributed_auth_system.TransactionSe
 	fmt.Printf("Storing data: %s = %s\n", key, value)
 
 	// Create a transaction request
-	req := &distributed_auth_system.TransactionRequest{
-		Key:   key,
-		Value: value,
+	req := &protoc.TransactionRequest{
+		Transaction: &protoc.Transaction{
+			Key:   key,
+			Value: value,
+		},
 	}
 
 	// Send the request
@@ -89,15 +92,17 @@ func storeData(ctx context.Context, client distributed_auth_system.TransactionSe
 }
 
 // getData retrieves a value by key
-func getData(ctx context.Context, client distributed_auth_system.TransactionServiceClient, key string) {
+func getData(ctx context.Context, client protoc.TransactionServiceClient, key string) {
 	fmt.Printf("Retrieving data for key: %s\n", key)
 
 	// In a real implementation, we would have a separate RPC for getting data
 	// For this example, we'll use the HandleTransaction RPC with an empty value
 	// to indicate a get operation
-	req := &distributed_auth_system.TransactionRequest{
-		Key:   key,
-		Value: "", // Empty value indicates a get operation
+	req := &protoc.TransactionRequest{
+		Transaction: &protoc.Transaction{
+			Key:   key,
+			Value: "",
+		},
 	}
 
 	// Send the request
@@ -127,9 +132,11 @@ func authenticateUser(ctx context.Context, client distributed_auth_system.Transa
 	authKey := fmt.Sprintf("auth:%s", username)
 
 	// Store the password hash (in a real implementation, this would be done during user registration)
-	storeReq := &distributed_auth_system.TransactionRequest{
-		Key:   authKey,
-		Value: password, // In a real implementation, this would be a password hash
+	storeReq := &protoc.TransactionRequest{
+		Transaction: &protoc.Transaction{
+			Key:   authKey,
+			Value: password, // In a real implementation, this would be a password hash
+		},
 	}
 
 	storeResp, err := client.HandleTransaction(ctx, storeReq)
@@ -145,9 +152,11 @@ func authenticateUser(ctx context.Context, client distributed_auth_system.Transa
 
 	// Simulate authentication by checking if the stored password matches
 	// In a real implementation, this would be a separate Login RPC
-	authReq := &distributed_auth_system.TransactionRequest{
-		Key:   authKey,
-		Value: password,
+	authReq := &protoc.TransactionRequest{
+		Transaction: &protoc.Transaction{
+			Key:   authKey,
+			Value: password,
+		},
 	}
 
 	authResp, err := client.HandleTransaction(ctx, authReq)

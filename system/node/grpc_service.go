@@ -3,6 +3,7 @@ package node
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"log"
 	"net"
 	"path/filepath"
@@ -54,7 +55,7 @@ func StartServer(nodeID string, port string, dataStore *DataStore, consensusMana
 		opts = append(opts, grpc.Creds(credentials.NewTLS(tlsConfig)))
 	}
 
-	listener, err := net.Listen("tcp", port)
+	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%s", nodeID, port))
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
@@ -148,6 +149,15 @@ func (s *TransactionService) SyncState(ctx context.Context, req *protoc.SyncRequ
 		MerkleRoot:          localMerkleRoot,
 		MissingTransactions: missing,
 	}, nil
+}
+
+func (s *TransactionService) RequestVote(ctx context.Context, in *protoc.RequestVoteRequest) (*protoc.RequestVoteResponse, error) {
+	candidateID := in.CandidateId
+	term := int(in.Term)
+	lastLogIndex := int(in.LastLogIndex)
+	lastLogTerm := int(in.LastLogTerm)
+	currentTerm, voteGranted := s.consensusManager.raftNode.HanldeRequestVote(candidateID, term, lastLogIndex, lastLogTerm)
+	return &protoc.RequestVoteResponse{Term: int32(currentTerm), VoteGranted: voteGranted}, nil
 }
 
 func mightContainKey(filterData []byte, key string) bool {

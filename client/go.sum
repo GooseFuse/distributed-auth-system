@@ -1,3 +1,5 @@
+github.com/GooseFuse/distributed-auth-system/protoc v0.0.0-20250411233547-c07a6a0bf10e h1:vgR7L3tjKNP93GZjSbqOwpqloTX/G0cWZ1jIicT1Ono=
+github.com/GooseFuse/distributed-auth-system/protoc v0.0.0-20250411233547-c07a6a0bf10e/go.mod h1:WsGTCFHTJUkTvMBkBhCX9PB0bHp6aE0hUtmTHRHhuaA=
 github.com/go-logr/logr v1.4.2 h1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=
 github.com/go-logr/logr v1.4.2/go.mod h1:9T104GzyrTigFIr8wt5mBrctHMim0Nb2HLGrmQ40KvY=
 github.com/go-logr/stdr v1.2.2 h1:hSWxHoqTgW2S2qGc0LTAI563KZ5YKYRhT3MFKZMbjag=

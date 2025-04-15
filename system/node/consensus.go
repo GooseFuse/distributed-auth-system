@@ -4,9 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"math/rand"
 	"sync"
 	"time"
+
+	"github.com/GooseFuse/distributed-auth-system/protoc"
 )
 
 // RaftState represents the state of a node in the Raft consensus algorithm
@@ -61,18 +64,11 @@ type RaftNode struct {
 	leaderID           string
 	applyCh            chan LogEntry
 	stopCh             chan struct{}
-	peerClients        map[string]*RaftClient
+	peerClients        map[string]protoc.TransactionServiceClient
 	dataStore          *DataStore
 	transactionHandler func([]byte) error
 
 	mutex sync.RWMutex
-}
-
-// RaftClient represents a client for communicating with other Raft nodes
-type RaftClient struct {
-	nodeID  string
-	address string
-	// In a real implementation, this would contain gRPC client connections
 }
 
 // NewRaftNode creates a new Raft node
@@ -94,19 +90,9 @@ func NewRaftNode(config RaftConfig, dataStore *DataStore, transactionHandler fun
 		leaderID:           "",
 		applyCh:            make(chan LogEntry, 100),
 		stopCh:             make(chan struct{}),
-		peerClients:        make(map[string]*RaftClient),
+		peerClients:        make(map[string]protoc.TransactionServiceClient),
 		dataStore:          dataStore,
 		transactionHandler: transactionHandler,
-	}
-
-	// Initialize peer clients
-	for id, addr := range config.PeerAddresses {
-		if id != config.NodeID {
-			node.peerClients[id] = &RaftClient{
-				nodeID:  id,
-				address: addr,
-			}
-		}
 	}
 
 	return node
@@ -182,7 +168,7 @@ func (rn *RaftNode) startElection() {
 	}
 	rn.electionTimeout = randomTimeout(rn.config.ElectionTimeoutMin, rn.config.ElectionTimeoutMax)
 	rn.lastHeartbeat = time.Now()
-	rn.mutex.Unlock()
+	defer rn.mutex.Unlock()
 
 	fmt.Printf("Node %s starting election for term %d\n", rn.config.NodeID, currentTerm)
 
@@ -195,11 +181,11 @@ func (rn *RaftNode) startElection() {
 
 	for peerID, client := range rn.peerClients {
 		wg.Add(1)
-		go func(peerID string, client *RaftClient) {
+		go func(peerID string, client protoc.TransactionServiceClient) {
 			defer wg.Done()
-			granted, err := rn.requestVote(client, currentTerm, lastLogIndex, lastLogTerm)
+			granted, err := rn.RequestVote(client, currentTerm, lastLogIndex, lastLogTerm)
 			if err != nil {
-				fmt.Printf("Error requesting vote from %s: %v\n", peerID, err)
+				fmt.Printf("❌ RequestVote RPC Error from %s: %v\n", peerID, err)
 				return
 			}
 
@@ -215,8 +201,8 @@ func (rn *RaftNode) startElection() {
 	wg.Wait()
 
 	// Check if we won the election
-	rn.mutex.Lock()
-	defer rn.mutex.Unlock()
+	//rn.mutex.Lock()
+	//defer rn.mutex.Unlock()
 
 	// Only become leader if still a candidate and term hasn't changed
 	if rn.state == Candidate && rn.currentTerm == currentTerm && votesReceived >= votesNeeded {
@@ -257,7 +243,7 @@ func (rn *RaftNode) sendHeartbeats() {
 
 	for peerID, client := range rn.peerClients {
 		wg.Add(1)
-		go func(peerID string, client *RaftClient) {
+		go func(peerID string, client protoc.TransactionServiceClient) {
 			defer wg.Done()
 
 			rn.mutex.RLock()
@@ -365,19 +351,34 @@ func (rn *RaftNode) ProposeCommand(command []byte) (bool, error) {
 }
 
 // requestVote sends a RequestVote RPC to a peer
-func (rn *RaftNode) requestVote(client *RaftClient, term, lastLogIndex, lastLogTerm int) (bool, error) {
-	// In a real implementation, this would use gRPC to send the request
-	// For this example, we'll simulate the RPC
+func (rn *RaftNode) RequestVote(client protoc.TransactionServiceClient, term, lastLogIndex, lastLogTerm int) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
 
-	// Simulate network delay
-	time.Sleep(time.Duration(rand.Intn(50)) * time.Millisecond)
+	req := &protoc.RequestVoteRequest{
+		Term:         int32(term),
+		LastLogIndex: int32(lastLogIndex),
+		LastLogTerm:  int32(lastLogTerm),
+		CandidateId:  rn.config.NodeID,
+	}
 
-	// Simulate response
-	return true, nil
+	resp, err := client.RequestVote(ctx, req)
+	if err != nil {
+		return false, err
+	}
+
+	// Update term if needed
+	if resp.Term > int32(rn.currentTerm) {
+		rn.currentTerm = int(resp.Term)
+		rn.votedFor = "" // reset vote
+		rn.state = Follower
+	}
+
+	return resp.VoteGranted, nil
 }
 
 // appendEntries sends an AppendEntries RPC to a peer
-func (rn *RaftNode) appendEntries(client *RaftClient, term, prevLogIndex, prevLogTerm int, entries []LogEntry, leaderCommit int) (bool, error) {
+func (rn *RaftNode) appendEntries(client protoc.TransactionServiceClient, term, prevLogIndex, prevLogTerm int, entries []LogEntry, leaderCommit int) (bool, error) {
 	// In a real implementation, this would use gRPC to send the request
 	// For this example, we'll simulate the RPC
 
@@ -389,9 +390,12 @@ func (rn *RaftNode) appendEntries(client *RaftClient, term, prevLogIndex, prevLo
 }
 
 // HandleRequestVote handles a RequestVote RPC from a peer
-func (rn *RaftNode) HandleRequestVote(candidateID string, term, lastLogIndex, lastLogTerm int) (int, bool) {
+func (rn *RaftNode) HanldeRequestVote(candidateID string, term, lastLogIndex, lastLogTerm int) (int, bool) {
 	rn.mutex.Lock()
 	defer rn.mutex.Unlock()
+
+	log.Printf("🔁 RequestVote request from candidateID %s | term: %d | lastLogIndex: %d | lastLogTerm: %d",
+		candidateID, term, lastLogIndex, lastLogTerm)
 
 	// If term > currentTerm, update currentTerm
 	if term > rn.currentTerm {
@@ -537,7 +541,7 @@ type ConsensusManager struct {
 }
 
 // NewConsensusManager creates a new ConsensusManager
-func NewConsensusManager(config RaftConfig, dataStore *DataStore) *ConsensusManager {
+func NewConsensusManager(config RaftConfig, dataStore *DataStore, networkManager *NetworkManager) *ConsensusManager {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// Create a transaction handler function
@@ -555,6 +559,11 @@ func NewConsensusManager(config RaftConfig, dataStore *DataStore) *ConsensusMana
 	}
 
 	raftNode := NewRaftNode(config, dataStore, transactionHandler)
+	// Get all peer clients
+	raftNode.peerClients = networkManager.GetPeerClients()
+	if len(raftNode.peerClients) == 0 {
+		log.Printf("No peers available for consensus")
+	}
 
 	return &ConsensusManager{
 		raftNode:  raftNode,
