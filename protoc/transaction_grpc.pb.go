@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v6.30.2
-// source: transaction.proto
+// source: protoc/transaction.proto
 
 package protoc
 
@@ -26,6 +26,8 @@ const (
 	TransactionService_VerifyState_FullMethodName       = "/protoc.TransactionService/VerifyState"
 	TransactionService_GetNetworkInfo_FullMethodName    = "/protoc.TransactionService/GetNetworkInfo"
 	TransactionService_ManageCheckpoint_FullMethodName  = "/protoc.TransactionService/ManageCheckpoint"
+	TransactionService_Get_FullMethodName               = "/protoc.TransactionService/Get"
+	TransactionService_Auth_FullMethodName              = "/protoc.TransactionService/Auth"
 )
 
 // TransactionServiceClient is the client API for TransactionService service.
@@ -46,6 +48,9 @@ type TransactionServiceClient interface {
 	GetNetworkInfo(ctx context.Context, in *NetworkInfoRequest, opts ...grpc.CallOption) (*NetworkInfoResponse, error)
 	// Checkpoint management
 	ManageCheckpoint(ctx context.Context, in *CheckpointRequest, opts ...grpc.CallOption) (*CheckpointResponse, error)
+	// Other operations
+	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
+	Auth(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*AuthResponse, error)
 }
 
 type transactionServiceClient struct {
@@ -126,6 +131,26 @@ func (c *transactionServiceClient) ManageCheckpoint(ctx context.Context, in *Che
 	return out, nil
 }
 
+func (c *transactionServiceClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetResponse)
+	err := c.cc.Invoke(ctx, TransactionService_Get_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *transactionServiceClient) Auth(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*AuthResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AuthResponse)
+	err := c.cc.Invoke(ctx, TransactionService_Auth_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TransactionServiceServer is the server API for TransactionService service.
 // All implementations must embed UnimplementedTransactionServiceServer
 // for forward compatibility.
@@ -144,6 +169,9 @@ type TransactionServiceServer interface {
 	GetNetworkInfo(context.Context, *NetworkInfoRequest) (*NetworkInfoResponse, error)
 	// Checkpoint management
 	ManageCheckpoint(context.Context, *CheckpointRequest) (*CheckpointResponse, error)
+	// Other operations
+	Get(context.Context, *GetRequest) (*GetResponse, error)
+	Auth(context.Context, *AuthRequest) (*AuthResponse, error)
 	mustEmbedUnimplementedTransactionServiceServer()
 }
 
@@ -174,6 +202,12 @@ func (UnimplementedTransactionServiceServer) GetNetworkInfo(context.Context, *Ne
 }
 func (UnimplementedTransactionServiceServer) ManageCheckpoint(context.Context, *CheckpointRequest) (*CheckpointResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ManageCheckpoint not implemented")
+}
+func (UnimplementedTransactionServiceServer) Get(context.Context, *GetRequest) (*GetResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+func (UnimplementedTransactionServiceServer) Auth(context.Context, *AuthRequest) (*AuthResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Auth not implemented")
 }
 func (UnimplementedTransactionServiceServer) mustEmbedUnimplementedTransactionServiceServer() {}
 func (UnimplementedTransactionServiceServer) testEmbeddedByValue()                            {}
@@ -322,6 +356,42 @@ func _TransactionService_ManageCheckpoint_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TransactionService_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TransactionServiceServer).Get(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TransactionService_Get_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TransactionServiceServer).Get(ctx, req.(*GetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TransactionService_Auth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TransactionServiceServer).Auth(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TransactionService_Auth_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TransactionServiceServer).Auth(ctx, req.(*AuthRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TransactionService_ServiceDesc is the grpc.ServiceDesc for TransactionService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -357,7 +427,15 @@ var TransactionService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "ManageCheckpoint",
 			Handler:    _TransactionService_ManageCheckpoint_Handler,
 		},
+		{
+			MethodName: "Get",
+			Handler:    _TransactionService_Get_Handler,
+		},
+		{
+			MethodName: "Auth",
+			Handler:    _TransactionService_Auth_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "transaction.proto",
+	Metadata: "protoc/transaction.proto",
 }

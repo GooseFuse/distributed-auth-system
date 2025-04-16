@@ -228,3 +228,7 @@ This ensures that only the source code and necessary configuration files are com
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+
+
+generate proto: `protoc --proto_path=. --go_out=paths=source_relative:. --go-grpc_out=paths=source_relative:. protoc/transaction.proto`

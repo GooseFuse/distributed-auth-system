@@ -131,6 +131,11 @@ func (nm *NetworkManager) GetPeerClients() map[string]protoc.TransactionServiceC
 	return clients
 }
 
+// GetPeerClients returns a map of peer clients
+func (nm *NetworkManager) GetPeerUrl(id string) string {
+	return nm.peerNodes[id]
+}
+
 // BroadcastTransaction broadcasts a key-value transaction to all peers
 func (nm *NetworkManager) BroadcastTransaction(key, value string) {
 	nm.mutex.RLock()

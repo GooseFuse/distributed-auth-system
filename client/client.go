@@ -1,4 +1,3 @@
-// This file is a client example for the distributed-auth-system
 package main
 
 import (
@@ -10,24 +9,19 @@ import (
 	"time"
 
 	"github.com/GooseFuse/distributed-auth-system/protoc"
-	distributed_auth_system "github.com/GooseFuse/distributed-auth-system/protoc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func main() {
-	// Parse command line flags
-	serverAddr := flag.String("server", "localhost:50051", "Server address")
-	useTLS := flag.Bool("tls", false, "Use TLS")
-	operation := flag.String("op", "store", "Operation: store, get, or auth")
-	key := flag.String("key", "user123", "Key for store/get operations")
-	value := flag.String("value", "password456", "Value for store operation")
-	flag.Parse()
+var (
+	useTLS *bool
+)
 
+func getConn(serverAddr string, useTLS bool) *grpc.ClientConn {
 	// Set up connection options
 	var opts []grpc.DialOption
-	if *useTLS {
+	if useTLS {
 		// Load TLS credentials
 		creds := credentials.NewTLS(&tls.Config{
 			InsecureSkipVerify: true, // For testing only, don't use in production
@@ -38,14 +32,27 @@ func main() {
 	}
 
 	// Connect to the server
-	conn, err := grpc.Dial(*serverAddr, opts...)
+	conn, err := grpc.Dial(serverAddr, opts...)
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}
+	return conn
+}
+
+func main() {
+	// Parse command line flags
+	serverAddr := flag.String("server", "localhost:50051", "Server address")
+	useTLS = flag.Bool("tls", false, "Use TLS")
+	operation := flag.String("op", "store", "Operation: store, get, or auth")
+	key := flag.String("key", "user123", "Key for store/get operations")
+	value := flag.String("value", "password456", "Value for store operation")
+	flag.Parse()
+
+	conn := getConn(*serverAddr, *useTLS)
 	defer conn.Close()
 
 	// Create a client
-	client := distributed_auth_system.NewTransactionServiceClient(conn)
+	client := protoc.NewTransactionServiceClient(conn)
 
 	// Create a context with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -65,7 +72,7 @@ func main() {
 }
 
 // storeData stores a key-value pair
-func storeData(ctx context.Context, client distributed_auth_system.TransactionServiceClient, key, value string) {
+func storeData(ctx context.Context, client protoc.TransactionServiceClient, key, value string) {
 	fmt.Printf("Storing data: %s = %s\n", key, value)
 
 	// Create a transaction request
@@ -85,8 +92,14 @@ func storeData(ctx context.Context, client distributed_auth_system.TransactionSe
 	// Print the response
 	if resp.Success {
 		fmt.Println("Data stored successfully")
+	} else if resp.LeaderUrl != "" {
+		fmt.Printf("Redirected to: %s\n", resp.LeaderUrl)
+		conn := getConn(resp.LeaderUrl, *useTLS)
+		defer conn.Close()
+		// Create a client
+		leaderClient := protoc.NewTransactionServiceClient(conn)
+		storeData(ctx, leaderClient, key, value)
 	} else {
-		// Note: In the current implementation, TransactionResponse doesn't have an ErrorMessage field
 		fmt.Println("Failed to store data")
 	}
 }
@@ -98,22 +111,19 @@ func getData(ctx context.Context, client protoc.TransactionServiceClient, key st
 	// In a real implementation, we would have a separate RPC for getting data
 	// For this example, we'll use the HandleTransaction RPC with an empty value
 	// to indicate a get operation
-	req := &protoc.TransactionRequest{
-		Transaction: &protoc.Transaction{
-			Key:   key,
-			Value: "",
-		},
+	req := &protoc.GetRequest{
+		User: key,
 	}
 
 	// Send the request
-	resp, err := client.HandleTransaction(ctx, req)
+	resp, err := client.Get(ctx, req)
 	if err != nil {
 		log.Fatalf("Failed to retrieve data: %v", err)
 	}
 
 	// Print the response
 	if resp.Success {
-		fmt.Println("Data retrieved successfully")
+		log.Printf("Data retrieved successfully: %s\n", resp.Value)
 		// In a real implementation, the response would include the value
 		fmt.Println("Note: This is a simplified example. In a real implementation, the response would include the value.")
 	} else {
@@ -123,7 +133,7 @@ func getData(ctx context.Context, client protoc.TransactionServiceClient, key st
 }
 
 // authenticateUser simulates user authentication
-func authenticateUser(ctx context.Context, client distributed_auth_system.TransactionServiceClient, username, password string) {
+func authenticateUser(ctx context.Context, client protoc.TransactionServiceClient, username, password string) {
 	fmt.Printf("Authenticating user: %s\n", username)
 
 	// In a real implementation, we would have a separate AuthService

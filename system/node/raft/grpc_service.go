@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"path/filepath"
+	"time"
 
 	"github.com/GooseFuse/distributed-auth-system/protoc"
 	"github.com/GooseFuse/distributed-auth-system/system/datastore"
@@ -80,26 +81,31 @@ func (s *TransactionService) HandleTransaction(ctx context.Context, req *protoc.
 
 	// If this node is not the leader, forward to leader (in a real implementation)
 	if !s.consensusManager.IsLeader() {
-		log.Printf("Not the leader, forward to leader...")
+		fmt.Printf("Not the leader, forward to leader...")
 		leader := s.consensusManager.GetLeader()
 		if leader == "" {
-			log.Printf("Leader is not selected yet, dropping...")
+			fmt.Printf("Leader is not selected yet, dropping...")
 			return &protoc.TransactionResponse{
 				Success: false,
 			}, nil
 		} else {
-			log.Printf("Leader: %s", leader)
-			log.Printf("Client: %v", s.consensusManager.raftNode.peerClients[leader])
-			return s.consensusManager.raftNode.peerClients[leader].HandleTransaction(ctx, req)
+			fmt.Printf("Not the leader. Please retry with leader: %s", leader)
+			return &protoc.TransactionResponse{
+				Success:      false,
+				ErrorMessage: fmt.Sprintf("Not the leader. Please retry with leader: %s", leader),
+				LeaderUrl:    s.consensusManager.raftNode.networkManager.GetPeerUrl(leader),
+			}, nil
 		}
 	}
 
 	// Propose transaction to the consensus mechanism
+	log.Printf("Propose transaction: key=%s, value=%s", req.Transaction.Key, req.Transaction.Value)
 	success, err := s.consensusManager.ProposeTransaction(req.Transaction.Key, req.Transaction.Value)
 	if err != nil {
 		log.Printf("Error proposing transaction: %v", err)
 		return &protoc.TransactionResponse{
-			Success: false,
+			Success:      false,
+			ErrorMessage: err.Error(),
 		}, nil
 	}
 
@@ -118,6 +124,76 @@ func (s *TransactionService) VerifyState(ctx context.Context, req *protoc.StateV
 	return &protoc.StateVerificationResponse{
 		Consistent: isConsistent,
 		MerkleRoot: localMerkleRoot,
+	}, nil
+}
+
+func (s *TransactionService) AppendEntries(ctx context.Context, req *protoc.AppendEntriesRequest) (*protoc.AppendEntriesResponse, error) {
+	node := s.consensusManager.raftNode
+
+	node.mutex.Lock()
+	defer node.mutex.Unlock()
+
+	// Step 1: Reject if term is outdated
+	if int(req.Term) < node.currentTerm {
+		return &protoc.AppendEntriesResponse{
+			Term:    int32(node.currentTerm),
+			Success: false,
+		}, nil
+	}
+
+	// Step 2: If term is higher, update local term and step down if leader
+	if int(req.Term) > node.currentTerm {
+		node.currentTerm = int(req.Term)
+		node.state = Follower
+		node.votedFor = ""
+	}
+
+	// Step 3: Reset election timeout
+	node.leaderID = req.LeaderId
+	node.lastHeartbeat = time.Now()
+
+	// Step 4: Validate log consistency
+	if int(req.PrevLogIndex) >= 0 {
+		if int(req.PrevLogIndex) >= len(node.log) ||
+			node.log[req.PrevLogIndex].Term != int32(req.PrevLogTerm) {
+			return &protoc.AppendEntriesResponse{
+				Term:    int32(node.currentTerm),
+				Success: false,
+			}, nil
+		}
+	}
+
+	// Step 5: Delete conflicting entries and append new ones
+	for i, entry := range req.Entries {
+		logIndex := int(req.PrevLogIndex) + 1 + i
+		if logIndex < len(node.log) {
+			if node.log[logIndex].Term != int32(entry.Term) {
+				node.log = node.log[:logIndex] // delete conflicting entries
+				break
+			}
+		}
+	}
+
+	for i, entry := range req.Entries {
+		logIndex := int(req.PrevLogIndex) + 1 + i
+		if logIndex >= len(node.log) {
+			node.log = append(node.log, entry)
+		}
+	}
+
+	// Step 6: Update commit index and apply new entries
+	if int(req.LeaderCommit) > node.commitIndex {
+		node.commitIndex = min(int(req.LeaderCommit), len(node.log)-1)
+
+		for i := node.lastApplied + 1; i <= node.commitIndex; i++ {
+			node.applyCh <- node.log[i]
+			node.lastApplied = i
+		}
+	}
+
+	return &protoc.AppendEntriesResponse{
+		Term:    int32(node.currentTerm),
+		Success: true,
 	}, nil
 }
 
@@ -176,4 +252,12 @@ func mightContainKey(filterData []byte, key string) bool {
 		return true
 	}
 	return filter.Test([]byte(key))
+}
+
+func (s *TransactionService) Get(ctx context.Context, req *protoc.GetRequest) (*protoc.GetResponse, error) {
+	return &protoc.GetResponse{}, nil
+}
+
+func (s *TransactionService) Auth(ctx context.Context, req *protoc.AuthRequest) (*protoc.AuthResponse, error) {
+	return &protoc.AuthResponse{}, nil
 }

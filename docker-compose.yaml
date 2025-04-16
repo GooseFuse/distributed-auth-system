@@ -53,7 +53,9 @@ services:
 
   demo-node:
     image: distributed-auth-system-demo-client:latest
-    build: ./client/
+    build:
+      context: .
+      dockerfile: Dockerfile.client
     container_name: demo-node
     depends_on:
       - auth-node-1

@@ -73,8 +73,8 @@ func (n *Node) Start() {
 	n.consensusManager.Start()
 
 	// Initialize the sync manager
-	n.syncManager = NewSyncManager(n.dataStore, n.networkManager)
-	n.syncManager.Start()
+	//n.syncManager = NewSyncManager(n.dataStore, n.networkManager)
+	//n.syncManager.Start()
 
 	// Initialize the checkpoint manager
 	checkpointDir := filepath.Join(n.DBPath, "checkpoints")

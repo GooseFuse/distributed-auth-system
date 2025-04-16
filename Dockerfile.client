@@ -5,12 +5,12 @@ WORKDIR /build
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY run-demo.sh ./run-demo.sh
-RUN ls -l ./run-demo.sh
+COPY client/run-demo.sh ./run-demo.sh
+# RUN ls -l ./run-demo.sh
 COPY . .
 
 # 🔧 Build a static binary with no glibc dependency
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o auth-client
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o auth-client ./client
 
 FROM debian:bullseye-slim
 

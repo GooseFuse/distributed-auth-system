@@ -29,6 +29,7 @@ message TransactionResponse {
     bool success = 1;
     string error_message = 2;
     string merkle_root = 3; // Current Merkle root after transaction
+    string leader_url = 4;
 }
 
 // AppendEntriesRequest represents a request for the AppendEntries RPC in Raft
@@ -121,6 +122,26 @@ message CheckpointResponse {
     string error_message = 3;
 }
 
+message GetRequest {
+    string user = 1;
+}
+
+message GetResponse {
+    string value = 1;
+    bool success = 2;
+    string error_message = 3;
+}
+
+message AuthRequest {
+    string user = 1;
+    string pass = 2;
+}
+
+message AuthResponse {
+    bool success = 1;
+    string error_message = 2;
+}
+
 // TransactionService defines the gRPC service for handling transactions and consensus
 service TransactionService {
     // Transaction handling
@@ -139,4 +160,8 @@ service TransactionService {
     
     // Checkpoint management
     rpc ManageCheckpoint(CheckpointRequest) returns (CheckpointResponse);
+
+    // Other operations
+    rpc Get(GetRequest) returns (GetResponse);
+    rpc Auth(AuthRequest) returns (AuthResponse);
 }

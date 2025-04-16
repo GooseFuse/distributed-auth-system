@@ -31,9 +31,9 @@ type RaftNode struct {
 	config RaftConfig
 
 	// Persistent state on all servers
-	currentTerm int               // Latest term server has seen
-	votedFor    string            // CandidateID that received vote in current term (or empty if none)
-	log         []protoc.LogEntry // Log entries
+	currentTerm int                // Latest term server has seen
+	votedFor    string             // CandidateID that received vote in current term (or empty if none)
+	log         []*protoc.LogEntry // Log entries
 
 	// Volatile state on all servers
 	commitIndex int // Index of highest log entry known to be committed
@@ -48,22 +48,21 @@ type RaftNode struct {
 	electionTimeout    time.Duration
 	lastHeartbeat      time.Time
 	leaderID           string
-	applyCh            chan protoc.LogEntry
+	applyCh            chan *protoc.LogEntry
 	stopCh             chan struct{}
-	peerClients        map[string]protoc.TransactionServiceClient
 	dataStore          *datastore.DataStore
-	transactionHandler func([]byte) error
-
-	mutex sync.RWMutex
+	transactionHandler func(*protoc.Transaction) error
+	networkManager     interfaces.NetworkManagerI
+	mutex              sync.RWMutex
 }
 
 // NewRaftNode creates a new Raft node
-func NewRaftNode(config RaftConfig, dataStore *datastore.DataStore, transactionHandler func([]byte) error) *RaftNode {
+func NewRaftNode(config RaftConfig, dataStore *datastore.DataStore, transactionHandler func(*protoc.Transaction) error) *RaftNode {
 	node := &RaftNode{
 		config:             config,
 		currentTerm:        0,
 		votedFor:           "",
-		log:                make([]protoc.LogEntry, 0),
+		log:                make([]*protoc.LogEntry, 0),
 		commitIndex:        -1,
 		lastApplied:        -1,
 		nextIndex:          make(map[string]int),
@@ -72,9 +71,8 @@ func NewRaftNode(config RaftConfig, dataStore *datastore.DataStore, transactionH
 		electionTimeout:    randomTimeout(config.ElectionTimeoutMin, config.ElectionTimeoutMax),
 		lastHeartbeat:      time.Now(),
 		leaderID:           "",
-		applyCh:            make(chan protoc.LogEntry, 100),
+		applyCh:            make(chan *protoc.LogEntry, 100),
 		stopCh:             make(chan struct{}),
-		peerClients:        make(map[string]protoc.TransactionServiceClient),
 		dataStore:          dataStore,
 		transactionHandler: transactionHandler,
 	}
@@ -148,13 +146,14 @@ func (rn *RaftNode) startElection() {
 	lastLogIndex := len(rn.log) - 1
 	lastLogTerm := 0
 	if lastLogIndex >= 0 {
-		lastLogTerm = rn.log[lastLogIndex].Term
+		lastLogTerm = int(rn.log[lastLogIndex].Term)
 	}
 	rn.electionTimeout = randomTimeout(rn.config.ElectionTimeoutMin, rn.config.ElectionTimeoutMax)
 	rn.lastHeartbeat = time.Now()
 	defer rn.mutex.Unlock()
 
-	fmt.Printf("Node %s starting election for term %d\n", rn.config.NodeID, currentTerm)
+	peerClients := rn.networkManager.GetPeerClients()
+	fmt.Printf("Node %s starting election for term %d with %d clients\n", rn.config.NodeID, currentTerm, len(peerClients))
 
 	// Request votes from all peers
 	votesReceived := 1 // Vote for self
@@ -163,11 +162,17 @@ func (rn *RaftNode) startElection() {
 	var votesMutex sync.Mutex
 	var wg sync.WaitGroup
 
-	for peerID, client := range rn.peerClients {
+	for peerID, client := range peerClients {
+		if peerID == rn.config.NodeID {
+			log.Printf("🔁 Skipping self (%s) in peer loop", peerID)
+			continue
+		}
+		log.Printf("🔁 PeerID: %s selfID: %s", peerID, rn.config.NodeID)
 		wg.Add(1)
 		go func(peerID string, client protoc.TransactionServiceClient) {
 			defer wg.Done()
-			granted, err := rn.RequestVote(client, currentTerm, lastLogIndex, lastLogTerm)
+
+			granted, err := rn.RequestVote(peerID, client, currentTerm, lastLogIndex, lastLogTerm)
 			if err != nil {
 				fmt.Printf("❌ RequestVote RPC Error from %s: %v\n", peerID, err)
 				return
@@ -197,12 +202,14 @@ func (rn *RaftNode) startElection() {
 
 // becomeLeader transitions the node to the leader state
 func (rn *RaftNode) becomeLeader() {
+	log.Printf("Become Leader...\n")
 	rn.state = Leader
 	rn.leaderID = rn.config.NodeID
 
 	// Initialize nextIndex and matchIndex for all peers
 	lastLogIndex := len(rn.log)
-	for peerID := range rn.peerClients {
+	peerClients := rn.networkManager.GetPeerClients()
+	for peerID := range peerClients {
 		rn.nextIndex[peerID] = lastLogIndex
 		rn.matchIndex[peerID] = -1
 	}
@@ -225,7 +232,11 @@ func (rn *RaftNode) sendHeartbeats() {
 
 	var wg sync.WaitGroup
 
-	for peerID, client := range rn.peerClients {
+	peerClients := rn.networkManager.GetPeerClients()
+	for peerID, client := range peerClients {
+		if peerID == rn.leaderID {
+			continue
+		}
 		wg.Add(1)
 		go func(peerID string, client protoc.TransactionServiceClient) {
 			defer wg.Done()
@@ -235,7 +246,7 @@ func (rn *RaftNode) sendHeartbeats() {
 			prevLogIndex := nextIdx - 1
 			prevLogTerm := 0
 			if prevLogIndex >= 0 && prevLogIndex < len(rn.log) {
-				prevLogTerm = rn.log[prevLogIndex].Term
+				prevLogTerm = int(rn.log[prevLogIndex].Term)
 			}
 
 			// Get log entries to send
@@ -251,7 +262,6 @@ func (rn *RaftNode) sendHeartbeats() {
 				fmt.Printf("Error sending AppendEntries to %s: %v\n", peerID, err)
 				return
 			}
-
 			if success {
 				rn.mutex.Lock()
 				if len(entries) > 0 {
@@ -269,9 +279,7 @@ func (rn *RaftNode) sendHeartbeats() {
 			}
 		}(peerID, client)
 	}
-
 	wg.Wait()
-
 	// Update commit index if needed
 	rn.updateCommitIndex()
 }
@@ -287,7 +295,7 @@ func (rn *RaftNode) updateCommitIndex() {
 
 	// Find the highest index that is replicated on a majority of servers
 	for n := rn.commitIndex + 1; n < len(rn.log); n++ {
-		if rn.log[n].Term != rn.currentTerm {
+		if rn.log[n].Term != int32(rn.currentTerm) {
 			continue
 		}
 
@@ -310,7 +318,7 @@ func (rn *RaftNode) updateCommitIndex() {
 }
 
 // ProposeCommand proposes a new command to the Raft cluster
-func (rn *RaftNode) ProposeCommand(command []byte) (bool, error) {
+func (rn *RaftNode) ProposeCommand(command *protoc.Transaction) (bool, error) {
 	rn.mutex.Lock()
 	defer rn.mutex.Unlock()
 
@@ -319,9 +327,9 @@ func (rn *RaftNode) ProposeCommand(command []byte) (bool, error) {
 	}
 
 	// Append to local log
-	entry := protoc.LogEntry{
-		Term:    rn.currentTerm,
-		Index:   len(rn.log),
+	entry := &protoc.LogEntry{
+		Term:    int32(rn.currentTerm),
+		Index:   int32(len(rn.log)),
 		Command: command,
 	}
 	rn.log = append(rn.log, entry)
@@ -335,7 +343,10 @@ func (rn *RaftNode) ProposeCommand(command []byte) (bool, error) {
 }
 
 // requestVote sends a RequestVote RPC to a peer
-func (rn *RaftNode) RequestVote(client protoc.TransactionServiceClient, term, lastLogIndex, lastLogTerm int) (bool, error) {
+func (rn *RaftNode) RequestVote(peerID string, client protoc.TransactionServiceClient, term, lastLogIndex, lastLogTerm int) (bool, error) {
+	fmt.Printf("📩 [RequestVote] From: %s | Term: %d | LastLogIndex: %d | LastLogTerm: %d\n",
+		peerID, term, lastLogIndex, lastLogTerm)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
@@ -412,7 +423,7 @@ func (rn *RaftNode) HanldeRequestVote(candidateID string, term, lastLogIndex, la
 	lastIndex := len(rn.log) - 1
 	lastTerm := 0
 	if lastIndex >= 0 {
-		lastTerm = rn.log[lastIndex].Term
+		lastTerm = int(rn.log[lastIndex].Term)
 	}
 
 	logOk := (lastLogTerm > lastTerm) || (lastLogTerm == lastTerm && lastLogIndex >= lastIndex)
@@ -428,7 +439,7 @@ func (rn *RaftNode) HanldeRequestVote(candidateID string, term, lastLogIndex, la
 }
 
 // HandleAppendEntries handles an AppendEntries RPC from a peer
-func (rn *RaftNode) HandleAppendEntries(leaderID string, term, prevLogIndex, prevLogTerm int, entries []protoc.LogEntry, leaderCommit int) (int, bool) {
+func (rn *RaftNode) HandleAppendEntries(leaderID string, term, prevLogIndex, prevLogTerm int, entries []*protoc.LogEntry, leaderCommit int) (int, bool) {
 	rn.mutex.Lock()
 	defer rn.mutex.Unlock()
 
@@ -458,7 +469,7 @@ func (rn *RaftNode) HandleAppendEntries(leaderID string, term, prevLogIndex, pre
 		if prevLogIndex >= len(rn.log) {
 			return rn.currentTerm, false
 		}
-		if rn.log[prevLogIndex].Term != prevLogTerm {
+		if rn.log[prevLogIndex].Term != int32(prevLogTerm) {
 			return rn.currentTerm, false
 		}
 	}
@@ -545,23 +556,15 @@ func NewConsensusManager(config RaftConfig, dataStore *datastore.DataStore, netw
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// Create a transaction handler function
-	transactionHandler := func(command []byte) error {
-		// Parse the command and apply it to the data store
-		// In a real implementation, this would deserialize the command and apply it
-		// For this example, we'll assume the command is a key-value pair
-		parts := splitCommand(command)
-		if len(parts) != 2 {
-			return errors.New("invalid command format")
-		}
-
-		key, value := parts[0], parts[1]
-		return dataStore.StoreData(key, value)
+	transactionHandler := func(command *protoc.Transaction) error {
+		return dataStore.StoreData(command.Key, command.Value)
 	}
 
 	raftNode := NewRaftNode(config, dataStore, transactionHandler)
 	// Get all peer clients
-	raftNode.peerClients = networkManager.GetPeerClients()
-	if len(raftNode.peerClients) == 0 {
+	raftNode.networkManager = networkManager
+	peerClients := networkManager.GetPeerClients()
+	if len(peerClients) == 0 {
 		log.Printf("No peers available for consensus")
 	}
 
@@ -586,11 +589,7 @@ func (cm *ConsensusManager) Stop() {
 
 // ProposeTransaction proposes a transaction to the Raft cluster
 func (cm *ConsensusManager) ProposeTransaction(key, value string) (bool, error) {
-	// Create a command from the key-value pair
-	command := createCommand(key, value)
-
-	// Propose the command to the Raft cluster
-	return cm.raftNode.ProposeCommand(command)
+	return cm.raftNode.ProposeCommand(&protoc.Transaction{Key: key, Value: value})
 }
 
 // IsLeader returns true if this node is the leader
@@ -601,13 +600,4 @@ func (cm *ConsensusManager) IsLeader() bool {
 // GetLeader returns the ID of the current leader
 func (cm *ConsensusManager) GetLeader() string {
 	return cm.raftNode.GetLeader()
-}
-
-// Helper functions for command serialization/deserialization
-func createCommand(key, value string) []byte {
-	return []byte(fmt.Sprintf("%s:%s", key, value))
-}
-
-func splitCommand(command []byte) []string {
-	return []string{string(command[:len(command)/2]), string(command[len(command)/2:])}
 }

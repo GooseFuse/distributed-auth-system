@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.6
 // 	protoc        v6.30.2
-// source: transaction.proto
+// source: protoc/transaction.proto
 
 package protoc
 
@@ -36,7 +36,7 @@ type Transaction struct {
 
 func (x *Transaction) Reset() {
 	*x = Transaction{}
-	mi := &file_transaction_proto_msgTypes[0]
+	mi := &file_protoc_transaction_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -48,7 +48,7 @@ func (x *Transaction) String() string {
 func (*Transaction) ProtoMessage() {}
 
 func (x *Transaction) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[0]
+	mi := &file_protoc_transaction_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -61,7 +61,7 @@ func (x *Transaction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Transaction.ProtoReflect.Descriptor instead.
 func (*Transaction) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{0}
+	return file_protoc_transaction_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Transaction) GetId() string {
@@ -117,7 +117,7 @@ type LogEntry struct {
 
 func (x *LogEntry) Reset() {
 	*x = LogEntry{}
-	mi := &file_transaction_proto_msgTypes[1]
+	mi := &file_protoc_transaction_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -129,7 +129,7 @@ func (x *LogEntry) String() string {
 func (*LogEntry) ProtoMessage() {}
 
 func (x *LogEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[1]
+	mi := &file_protoc_transaction_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -142,7 +142,7 @@ func (x *LogEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogEntry.ProtoReflect.Descriptor instead.
 func (*LogEntry) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{1}
+	return file_protoc_transaction_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *LogEntry) GetTerm() int32 {
@@ -176,7 +176,7 @@ type TransactionRequest struct {
 
 func (x *TransactionRequest) Reset() {
 	*x = TransactionRequest{}
-	mi := &file_transaction_proto_msgTypes[2]
+	mi := &file_protoc_transaction_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -188,7 +188,7 @@ func (x *TransactionRequest) String() string {
 func (*TransactionRequest) ProtoMessage() {}
 
 func (x *TransactionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[2]
+	mi := &file_protoc_transaction_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -201,7 +201,7 @@ func (x *TransactionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransactionRequest.ProtoReflect.Descriptor instead.
 func (*TransactionRequest) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{2}
+	return file_protoc_transaction_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *TransactionRequest) GetTransaction() *Transaction {
@@ -217,13 +217,14 @@ type TransactionResponse struct {
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	ErrorMessage  string                 `protobuf:"bytes,2,opt,name=error_message,json=errorMessage,proto3" json:"error_message,omitempty"`
 	MerkleRoot    string                 `protobuf:"bytes,3,opt,name=merkle_root,json=merkleRoot,proto3" json:"merkle_root,omitempty"` // Current Merkle root after transaction
+	LeaderUrl     string                 `protobuf:"bytes,4,opt,name=leader_url,json=leaderUrl,proto3" json:"leader_url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *TransactionResponse) Reset() {
 	*x = TransactionResponse{}
-	mi := &file_transaction_proto_msgTypes[3]
+	mi := &file_protoc_transaction_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -235,7 +236,7 @@ func (x *TransactionResponse) String() string {
 func (*TransactionResponse) ProtoMessage() {}
 
 func (x *TransactionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[3]
+	mi := &file_protoc_transaction_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -248,7 +249,7 @@ func (x *TransactionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TransactionResponse.ProtoReflect.Descriptor instead.
 func (*TransactionResponse) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{3}
+	return file_protoc_transaction_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *TransactionResponse) GetSuccess() bool {
@@ -272,6 +273,13 @@ func (x *TransactionResponse) GetMerkleRoot() string {
 	return ""
 }
 
+func (x *TransactionResponse) GetLeaderUrl() string {
+	if x != nil {
+		return x.LeaderUrl
+	}
+	return ""
+}
+
 // AppendEntriesRequest represents a request for the AppendEntries RPC in Raft
 type AppendEntriesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -287,7 +295,7 @@ type AppendEntriesRequest struct {
 
 func (x *AppendEntriesRequest) Reset() {
 	*x = AppendEntriesRequest{}
-	mi := &file_transaction_proto_msgTypes[4]
+	mi := &file_protoc_transaction_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -299,7 +307,7 @@ func (x *AppendEntriesRequest) String() string {
 func (*AppendEntriesRequest) ProtoMessage() {}
 
 func (x *AppendEntriesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[4]
+	mi := &file_protoc_transaction_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -312,7 +320,7 @@ func (x *AppendEntriesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AppendEntriesRequest.ProtoReflect.Descriptor instead.
 func (*AppendEntriesRequest) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{4}
+	return file_protoc_transaction_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *AppendEntriesRequest) GetTerm() int32 {
@@ -368,7 +376,7 @@ type AppendEntriesResponse struct {
 
 func (x *AppendEntriesResponse) Reset() {
 	*x = AppendEntriesResponse{}
-	mi := &file_transaction_proto_msgTypes[5]
+	mi := &file_protoc_transaction_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -380,7 +388,7 @@ func (x *AppendEntriesResponse) String() string {
 func (*AppendEntriesResponse) ProtoMessage() {}
 
 func (x *AppendEntriesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[5]
+	mi := &file_protoc_transaction_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -393,7 +401,7 @@ func (x *AppendEntriesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AppendEntriesResponse.ProtoReflect.Descriptor instead.
 func (*AppendEntriesResponse) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{5}
+	return file_protoc_transaction_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *AppendEntriesResponse) GetTerm() int32 {
@@ -423,7 +431,7 @@ type RequestVoteRequest struct {
 
 func (x *RequestVoteRequest) Reset() {
 	*x = RequestVoteRequest{}
-	mi := &file_transaction_proto_msgTypes[6]
+	mi := &file_protoc_transaction_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -435,7 +443,7 @@ func (x *RequestVoteRequest) String() string {
 func (*RequestVoteRequest) ProtoMessage() {}
 
 func (x *RequestVoteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[6]
+	mi := &file_protoc_transaction_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -448,7 +456,7 @@ func (x *RequestVoteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequestVoteRequest.ProtoReflect.Descriptor instead.
 func (*RequestVoteRequest) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{6}
+	return file_protoc_transaction_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *RequestVoteRequest) GetTerm() int32 {
@@ -490,7 +498,7 @@ type RequestVoteResponse struct {
 
 func (x *RequestVoteResponse) Reset() {
 	*x = RequestVoteResponse{}
-	mi := &file_transaction_proto_msgTypes[7]
+	mi := &file_protoc_transaction_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -502,7 +510,7 @@ func (x *RequestVoteResponse) String() string {
 func (*RequestVoteResponse) ProtoMessage() {}
 
 func (x *RequestVoteResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[7]
+	mi := &file_protoc_transaction_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -515,7 +523,7 @@ func (x *RequestVoteResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequestVoteResponse.ProtoReflect.Descriptor instead.
 func (*RequestVoteResponse) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{7}
+	return file_protoc_transaction_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *RequestVoteResponse) GetTerm() int32 {
@@ -544,7 +552,7 @@ type SyncRequest struct {
 
 func (x *SyncRequest) Reset() {
 	*x = SyncRequest{}
-	mi := &file_transaction_proto_msgTypes[8]
+	mi := &file_protoc_transaction_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -556,7 +564,7 @@ func (x *SyncRequest) String() string {
 func (*SyncRequest) ProtoMessage() {}
 
 func (x *SyncRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[8]
+	mi := &file_protoc_transaction_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -569,7 +577,7 @@ func (x *SyncRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SyncRequest.ProtoReflect.Descriptor instead.
 func (*SyncRequest) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{8}
+	return file_protoc_transaction_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *SyncRequest) GetNodeId() string {
@@ -605,7 +613,7 @@ type SyncResponse struct {
 
 func (x *SyncResponse) Reset() {
 	*x = SyncResponse{}
-	mi := &file_transaction_proto_msgTypes[9]
+	mi := &file_protoc_transaction_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -617,7 +625,7 @@ func (x *SyncResponse) String() string {
 func (*SyncResponse) ProtoMessage() {}
 
 func (x *SyncResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[9]
+	mi := &file_protoc_transaction_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -630,7 +638,7 @@ func (x *SyncResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SyncResponse.ProtoReflect.Descriptor instead.
 func (*SyncResponse) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{9}
+	return file_protoc_transaction_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *SyncResponse) GetSuccess() bool {
@@ -665,7 +673,7 @@ type StateVerificationRequest struct {
 
 func (x *StateVerificationRequest) Reset() {
 	*x = StateVerificationRequest{}
-	mi := &file_transaction_proto_msgTypes[10]
+	mi := &file_protoc_transaction_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -677,7 +685,7 @@ func (x *StateVerificationRequest) String() string {
 func (*StateVerificationRequest) ProtoMessage() {}
 
 func (x *StateVerificationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[10]
+	mi := &file_protoc_transaction_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -690,7 +698,7 @@ func (x *StateVerificationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StateVerificationRequest.ProtoReflect.Descriptor instead.
 func (*StateVerificationRequest) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{10}
+	return file_protoc_transaction_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *StateVerificationRequest) GetNodeId() string {
@@ -718,7 +726,7 @@ type StateVerificationResponse struct {
 
 func (x *StateVerificationResponse) Reset() {
 	*x = StateVerificationResponse{}
-	mi := &file_transaction_proto_msgTypes[11]
+	mi := &file_protoc_transaction_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -730,7 +738,7 @@ func (x *StateVerificationResponse) String() string {
 func (*StateVerificationResponse) ProtoMessage() {}
 
 func (x *StateVerificationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[11]
+	mi := &file_protoc_transaction_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -743,7 +751,7 @@ func (x *StateVerificationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StateVerificationResponse.ProtoReflect.Descriptor instead.
 func (*StateVerificationResponse) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{11}
+	return file_protoc_transaction_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *StateVerificationResponse) GetConsistent() bool {
@@ -773,7 +781,7 @@ type NodeInfo struct {
 
 func (x *NodeInfo) Reset() {
 	*x = NodeInfo{}
-	mi := &file_transaction_proto_msgTypes[12]
+	mi := &file_protoc_transaction_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -785,7 +793,7 @@ func (x *NodeInfo) String() string {
 func (*NodeInfo) ProtoMessage() {}
 
 func (x *NodeInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[12]
+	mi := &file_protoc_transaction_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -798,7 +806,7 @@ func (x *NodeInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NodeInfo.ProtoReflect.Descriptor instead.
 func (*NodeInfo) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{12}
+	return file_protoc_transaction_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *NodeInfo) GetId() string {
@@ -839,7 +847,7 @@ type NetworkInfoRequest struct {
 
 func (x *NetworkInfoRequest) Reset() {
 	*x = NetworkInfoRequest{}
-	mi := &file_transaction_proto_msgTypes[13]
+	mi := &file_protoc_transaction_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -851,7 +859,7 @@ func (x *NetworkInfoRequest) String() string {
 func (*NetworkInfoRequest) ProtoMessage() {}
 
 func (x *NetworkInfoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[13]
+	mi := &file_protoc_transaction_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -864,7 +872,7 @@ func (x *NetworkInfoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NetworkInfoRequest.ProtoReflect.Descriptor instead.
 func (*NetworkInfoRequest) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{13}
+	return file_protoc_transaction_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *NetworkInfoRequest) GetRequestingNodeId() string {
@@ -886,7 +894,7 @@ type NetworkInfoResponse struct {
 
 func (x *NetworkInfoResponse) Reset() {
 	*x = NetworkInfoResponse{}
-	mi := &file_transaction_proto_msgTypes[14]
+	mi := &file_protoc_transaction_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -898,7 +906,7 @@ func (x *NetworkInfoResponse) String() string {
 func (*NetworkInfoResponse) ProtoMessage() {}
 
 func (x *NetworkInfoResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[14]
+	mi := &file_protoc_transaction_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -911,7 +919,7 @@ func (x *NetworkInfoResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NetworkInfoResponse.ProtoReflect.Descriptor instead.
 func (*NetworkInfoResponse) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{14}
+	return file_protoc_transaction_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *NetworkInfoResponse) GetNodes() []*NodeInfo {
@@ -947,7 +955,7 @@ type CheckpointRequest struct {
 
 func (x *CheckpointRequest) Reset() {
 	*x = CheckpointRequest{}
-	mi := &file_transaction_proto_msgTypes[15]
+	mi := &file_protoc_transaction_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -959,7 +967,7 @@ func (x *CheckpointRequest) String() string {
 func (*CheckpointRequest) ProtoMessage() {}
 
 func (x *CheckpointRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[15]
+	mi := &file_protoc_transaction_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -972,7 +980,7 @@ func (x *CheckpointRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckpointRequest.ProtoReflect.Descriptor instead.
 func (*CheckpointRequest) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{15}
+	return file_protoc_transaction_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *CheckpointRequest) GetNodeId() string {
@@ -1008,7 +1016,7 @@ type CheckpointResponse struct {
 
 func (x *CheckpointResponse) Reset() {
 	*x = CheckpointResponse{}
-	mi := &file_transaction_proto_msgTypes[16]
+	mi := &file_protoc_transaction_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1020,7 +1028,7 @@ func (x *CheckpointResponse) String() string {
 func (*CheckpointResponse) ProtoMessage() {}
 
 func (x *CheckpointResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_proto_msgTypes[16]
+	mi := &file_protoc_transaction_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1033,7 +1041,7 @@ func (x *CheckpointResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckpointResponse.ProtoReflect.Descriptor instead.
 func (*CheckpointResponse) Descriptor() ([]byte, []int) {
-	return file_transaction_proto_rawDescGZIP(), []int{16}
+	return file_protoc_transaction_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *CheckpointResponse) GetSuccess() bool {
@@ -1057,11 +1065,219 @@ func (x *CheckpointResponse) GetErrorMessage() string {
 	return ""
 }
 
-var File_transaction_proto protoreflect.FileDescriptor
+type GetRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	User          string                 `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
 
-const file_transaction_proto_rawDesc = "" +
+func (x *GetRequest) Reset() {
+	*x = GetRequest{}
+	mi := &file_protoc_transaction_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRequest) ProtoMessage() {}
+
+func (x *GetRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_protoc_transaction_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRequest.ProtoReflect.Descriptor instead.
+func (*GetRequest) Descriptor() ([]byte, []int) {
+	return file_protoc_transaction_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *GetRequest) GetUser() string {
+	if x != nil {
+		return x.User
+	}
+	return ""
+}
+
+type GetResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Value         string                 `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
+	Success       bool                   `protobuf:"varint,2,opt,name=success,proto3" json:"success,omitempty"`
+	ErrorMessage  string                 `protobuf:"bytes,3,opt,name=error_message,json=errorMessage,proto3" json:"error_message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetResponse) Reset() {
+	*x = GetResponse{}
+	mi := &file_protoc_transaction_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetResponse) ProtoMessage() {}
+
+func (x *GetResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_protoc_transaction_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetResponse.ProtoReflect.Descriptor instead.
+func (*GetResponse) Descriptor() ([]byte, []int) {
+	return file_protoc_transaction_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *GetResponse) GetValue() string {
+	if x != nil {
+		return x.Value
+	}
+	return ""
+}
+
+func (x *GetResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *GetResponse) GetErrorMessage() string {
+	if x != nil {
+		return x.ErrorMessage
+	}
+	return ""
+}
+
+type AuthRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	User          string                 `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	Pass          string                 `protobuf:"bytes,2,opt,name=pass,proto3" json:"pass,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AuthRequest) Reset() {
+	*x = AuthRequest{}
+	mi := &file_protoc_transaction_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AuthRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AuthRequest) ProtoMessage() {}
+
+func (x *AuthRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_protoc_transaction_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AuthRequest.ProtoReflect.Descriptor instead.
+func (*AuthRequest) Descriptor() ([]byte, []int) {
+	return file_protoc_transaction_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *AuthRequest) GetUser() string {
+	if x != nil {
+		return x.User
+	}
+	return ""
+}
+
+func (x *AuthRequest) GetPass() string {
+	if x != nil {
+		return x.Pass
+	}
+	return ""
+}
+
+type AuthResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	ErrorMessage  string                 `protobuf:"bytes,2,opt,name=error_message,json=errorMessage,proto3" json:"error_message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AuthResponse) Reset() {
+	*x = AuthResponse{}
+	mi := &file_protoc_transaction_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AuthResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AuthResponse) ProtoMessage() {}
+
+func (x *AuthResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_protoc_transaction_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AuthResponse.ProtoReflect.Descriptor instead.
+func (*AuthResponse) Descriptor() ([]byte, []int) {
+	return file_protoc_transaction_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *AuthResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *AuthResponse) GetErrorMessage() string {
+	if x != nil {
+		return x.ErrorMessage
+	}
+	return ""
+}
+
+var File_protoc_transaction_proto protoreflect.FileDescriptor
+
+const file_protoc_transaction_proto_rawDesc = "" +
 	"\n" +
-	"\x11transaction.proto\x12\x06protoc\"\xa0\x01\n" +
+	"\x18protoc/transaction.proto\x12\x06protoc\"\xa0\x01\n" +
 	"\vTransaction\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x10\n" +
 	"\x03key\x18\x02 \x01(\tR\x03key\x12\x14\n" +
@@ -1075,12 +1291,14 @@ const file_transaction_proto_rawDesc = "" +
 	"\x05index\x18\x02 \x01(\x05R\x05index\x12-\n" +
 	"\acommand\x18\x03 \x01(\v2\x13.protoc.TransactionR\acommand\"K\n" +
 	"\x12TransactionRequest\x125\n" +
-	"\vtransaction\x18\x01 \x01(\v2\x13.protoc.TransactionR\vtransaction\"u\n" +
+	"\vtransaction\x18\x01 \x01(\v2\x13.protoc.TransactionR\vtransaction\"\x94\x01\n" +
 	"\x13TransactionResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12#\n" +
 	"\rerror_message\x18\x02 \x01(\tR\ferrorMessage\x12\x1f\n" +
 	"\vmerkle_root\x18\x03 \x01(\tR\n" +
-	"merkleRoot\"\xe2\x01\n" +
+	"merkleRoot\x12\x1d\n" +
+	"\n" +
+	"leader_url\x18\x04 \x01(\tR\tleaderUrl\"\xe2\x01\n" +
 	"\x14AppendEntriesRequest\x12\x12\n" +
 	"\x04term\x18\x01 \x01(\x05R\x04term\x12\x1b\n" +
 	"\tleader_id\x18\x02 \x01(\tR\bleaderId\x12$\n" +
@@ -1137,7 +1355,20 @@ const file_transaction_proto_rawDesc = "" +
 	"\x12CheckpointResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12#\n" +
 	"\rcheckpoint_id\x18\x02 \x01(\x03R\fcheckpointId\x12#\n" +
-	"\rerror_message\x18\x03 \x01(\tR\ferrorMessage2\x9a\x04\n" +
+	"\rerror_message\x18\x03 \x01(\tR\ferrorMessage\" \n" +
+	"\n" +
+	"GetRequest\x12\x12\n" +
+	"\x04user\x18\x01 \x01(\tR\x04user\"b\n" +
+	"\vGetResponse\x12\x14\n" +
+	"\x05value\x18\x01 \x01(\tR\x05value\x12\x18\n" +
+	"\asuccess\x18\x02 \x01(\bR\asuccess\x12#\n" +
+	"\rerror_message\x18\x03 \x01(\tR\ferrorMessage\"5\n" +
+	"\vAuthRequest\x12\x12\n" +
+	"\x04user\x18\x01 \x01(\tR\x04user\x12\x12\n" +
+	"\x04pass\x18\x02 \x01(\tR\x04pass\"M\n" +
+	"\fAuthResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12#\n" +
+	"\rerror_message\x18\x02 \x01(\tR\ferrorMessage2\xfd\x04\n" +
 	"\x12TransactionService\x12L\n" +
 	"\x11HandleTransaction\x12\x1a.protoc.TransactionRequest\x1a\x1b.protoc.TransactionResponse\x12L\n" +
 	"\rAppendEntries\x12\x1c.protoc.AppendEntriesRequest\x1a\x1d.protoc.AppendEntriesResponse\x12F\n" +
@@ -1145,22 +1376,24 @@ const file_transaction_proto_rawDesc = "" +
 	"\tSyncState\x12\x13.protoc.SyncRequest\x1a\x14.protoc.SyncResponse\x12R\n" +
 	"\vVerifyState\x12 .protoc.StateVerificationRequest\x1a!.protoc.StateVerificationResponse\x12I\n" +
 	"\x0eGetNetworkInfo\x12\x1a.protoc.NetworkInfoRequest\x1a\x1b.protoc.NetworkInfoResponse\x12I\n" +
-	"\x10ManageCheckpoint\x12\x19.protoc.CheckpointRequest\x1a\x1a.protoc.CheckpointResponseB<Z:github.com/GooseFuse/distributed-auth-system/protoc;protocb\x06proto3"
+	"\x10ManageCheckpoint\x12\x19.protoc.CheckpointRequest\x1a\x1a.protoc.CheckpointResponse\x12.\n" +
+	"\x03Get\x12\x12.protoc.GetRequest\x1a\x13.protoc.GetResponse\x121\n" +
+	"\x04Auth\x12\x13.protoc.AuthRequest\x1a\x14.protoc.AuthResponseB<Z:github.com/GooseFuse/distributed-auth-system/protoc;protocb\x06proto3"
 
 var (
-	file_transaction_proto_rawDescOnce sync.Once
-	file_transaction_proto_rawDescData []byte
+	file_protoc_transaction_proto_rawDescOnce sync.Once
+	file_protoc_transaction_proto_rawDescData []byte
 )
 
-func file_transaction_proto_rawDescGZIP() []byte {
-	file_transaction_proto_rawDescOnce.Do(func() {
-		file_transaction_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_transaction_proto_rawDesc), len(file_transaction_proto_rawDesc)))
+func file_protoc_transaction_proto_rawDescGZIP() []byte {
+	file_protoc_transaction_proto_rawDescOnce.Do(func() {
+		file_protoc_transaction_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_protoc_transaction_proto_rawDesc), len(file_protoc_transaction_proto_rawDesc)))
 	})
-	return file_transaction_proto_rawDescData
+	return file_protoc_transaction_proto_rawDescData
 }
 
-var file_transaction_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
-var file_transaction_proto_goTypes = []any{
+var file_protoc_transaction_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
+var file_protoc_transaction_proto_goTypes = []any{
 	(*Transaction)(nil),               // 0: protoc.Transaction
 	(*LogEntry)(nil),                  // 1: protoc.LogEntry
 	(*TransactionRequest)(nil),        // 2: protoc.TransactionRequest
@@ -1178,8 +1411,12 @@ var file_transaction_proto_goTypes = []any{
 	(*NetworkInfoResponse)(nil),       // 14: protoc.NetworkInfoResponse
 	(*CheckpointRequest)(nil),         // 15: protoc.CheckpointRequest
 	(*CheckpointResponse)(nil),        // 16: protoc.CheckpointResponse
+	(*GetRequest)(nil),                // 17: protoc.GetRequest
+	(*GetResponse)(nil),               // 18: protoc.GetResponse
+	(*AuthRequest)(nil),               // 19: protoc.AuthRequest
+	(*AuthResponse)(nil),              // 20: protoc.AuthResponse
 }
-var file_transaction_proto_depIdxs = []int32{
+var file_protoc_transaction_proto_depIdxs = []int32{
 	0,  // 0: protoc.LogEntry.command:type_name -> protoc.Transaction
 	0,  // 1: protoc.TransactionRequest.transaction:type_name -> protoc.Transaction
 	1,  // 2: protoc.AppendEntriesRequest.entries:type_name -> protoc.LogEntry
@@ -1192,40 +1429,44 @@ var file_transaction_proto_depIdxs = []int32{
 	10, // 9: protoc.TransactionService.VerifyState:input_type -> protoc.StateVerificationRequest
 	13, // 10: protoc.TransactionService.GetNetworkInfo:input_type -> protoc.NetworkInfoRequest
 	15, // 11: protoc.TransactionService.ManageCheckpoint:input_type -> protoc.CheckpointRequest
-	3,  // 12: protoc.TransactionService.HandleTransaction:output_type -> protoc.TransactionResponse
-	5,  // 13: protoc.TransactionService.AppendEntries:output_type -> protoc.AppendEntriesResponse
-	7,  // 14: protoc.TransactionService.RequestVote:output_type -> protoc.RequestVoteResponse
-	9,  // 15: protoc.TransactionService.SyncState:output_type -> protoc.SyncResponse
-	11, // 16: protoc.TransactionService.VerifyState:output_type -> protoc.StateVerificationResponse
-	14, // 17: protoc.TransactionService.GetNetworkInfo:output_type -> protoc.NetworkInfoResponse
-	16, // 18: protoc.TransactionService.ManageCheckpoint:output_type -> protoc.CheckpointResponse
-	12, // [12:19] is the sub-list for method output_type
-	5,  // [5:12] is the sub-list for method input_type
+	17, // 12: protoc.TransactionService.Get:input_type -> protoc.GetRequest
+	19, // 13: protoc.TransactionService.Auth:input_type -> protoc.AuthRequest
+	3,  // 14: protoc.TransactionService.HandleTransaction:output_type -> protoc.TransactionResponse
+	5,  // 15: protoc.TransactionService.AppendEntries:output_type -> protoc.AppendEntriesResponse
+	7,  // 16: protoc.TransactionService.RequestVote:output_type -> protoc.RequestVoteResponse
+	9,  // 17: protoc.TransactionService.SyncState:output_type -> protoc.SyncResponse
+	11, // 18: protoc.TransactionService.VerifyState:output_type -> protoc.StateVerificationResponse
+	14, // 19: protoc.TransactionService.GetNetworkInfo:output_type -> protoc.NetworkInfoResponse
+	16, // 20: protoc.TransactionService.ManageCheckpoint:output_type -> protoc.CheckpointResponse
+	18, // 21: protoc.TransactionService.Get:output_type -> protoc.GetResponse
+	20, // 22: protoc.TransactionService.Auth:output_type -> protoc.AuthResponse
+	14, // [14:23] is the sub-list for method output_type
+	5,  // [5:14] is the sub-list for method input_type
 	5,  // [5:5] is the sub-list for extension type_name
 	5,  // [5:5] is the sub-list for extension extendee
 	0,  // [0:5] is the sub-list for field type_name
 }
 
-func init() { file_transaction_proto_init() }
-func file_transaction_proto_init() {
-	if File_transaction_proto != nil {
+func init() { file_protoc_transaction_proto_init() }
+func file_protoc_transaction_proto_init() {
+	if File_protoc_transaction_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_transaction_proto_rawDesc), len(file_transaction_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_protoc_transaction_proto_rawDesc), len(file_protoc_transaction_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   17,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_transaction_proto_goTypes,
-		DependencyIndexes: file_transaction_proto_depIdxs,
-		MessageInfos:      file_transaction_proto_msgTypes,
+		GoTypes:           file_protoc_transaction_proto_goTypes,
+		DependencyIndexes: file_protoc_transaction_proto_depIdxs,
+		MessageInfos:      file_protoc_transaction_proto_msgTypes,
 	}.Build()
-	File_transaction_proto = out.File
-	file_transaction_proto_goTypes = nil
-	file_transaction_proto_depIdxs = nil
+	File_protoc_transaction_proto = out.File
+	file_protoc_transaction_proto_goTypes = nil
+	file_protoc_transaction_proto_depIdxs = nil
 }

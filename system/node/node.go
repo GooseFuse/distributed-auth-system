@@ -72,9 +72,9 @@ func Create() {
 		ElectionTimeoutMax: 30000, // 300ms
 		HeartbeatInterval:  50,    // 50ms
 		PeerAddresses: map[string]string{
-			"node1": "auth-node-1:6333",
-			"node2": "auth-node-2:6333",
-			"node3": "auth-node-3:6333",
+			"auth-node-1": "auth-node-1:6333",
+			"auth-node-2": "auth-node-2:6333",
+			"auth-node-3": "auth-node-3:6333",
 		},
 	}
 
