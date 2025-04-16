@@ -1,3 +1,6 @@
+# Still WIP (Work in progress)
+#
+
 # Distributed Authorization and Authentication System
 
 A distributed authorization and authentication system inspired by blockchain node architectures, emphasizing data consistency, network communication, and consensus management.
@@ -60,11 +63,6 @@ The system is composed of the following components:
    go mod download
    ```
 
-3. Generate gRPC code (if needed):
-   ```
-   protoc --go_out=. --go-grpc_out=. transaction.proto
-   ```
-
 ## Running the System
 
 ### Starting a Node
@@ -123,19 +121,17 @@ For more details on using the client, see the [client README](client/README.md).
 
 A demo script is provided to demonstrate how to run a cluster of nodes and interact with them using the client:
 
-```
-# Run the demo script
-run_demo.bat
+```bash
+docker-compose up --build
 ```
 
 The demo script:
 1. Builds the distributed auth system and client
-2. Starts Redis if it's not already running
-3. Creates a nodes directory with subdirectories for each node
-4. Starts three nodes on different ports
-5. Demonstrates client operations (store, get, authenticate)
-6. Keeps the nodes running until you press any key
-7. Automatically cleans up by stopping all node processes
+2. Starts docker containers:
+    * Redis
+    * 3x Auth-Nodes
+    * Client
+3. Demonstrates client operations (store, get, authenticate)
 
 ## System Components
 
@@ -185,16 +181,22 @@ isValid := securityManager.VerifySignature(data, signature, publicKey)
 
 ### Project Structure
 
-- `data_storage.go`: Data storage implementation
-- `consensus.go`: Raft consensus implementation
-- `network.go`: Network communication implementation
-- `security.go`: Security features implementation
-- `sync.go`: Synchronization and checkpointing implementation
-- `grpc_service.go`: gRPC service implementation
+- `client/`: Client application for interacting with the system
+  - `client.go`: Client implementation
+  - `run-demo.sh`: Demo script for automating client requests
+- `protoc/`: .proto definitions
+- `system/`: Auth-node implementation
+  - `data_storage.go`: Data storage implementation
+  - `consensus.go`: Raft consensus implementation
+  - `network.go`: Network communication implementation
+  - `security.go`: Security features implementation
+  - `sync.go`: Synchronization and checkpointing implementation
+  - `grpc_service.go`: gRPC service implementation
 - `main.go`: Main application entry point
 - `transaction.proto`: Protocol buffer definition
-- `client/`: Client application for interacting with the system
-- `run_demo.bat`: Demo script for running a cluster of nodes
+- `docker-compose.yaml`: Demo script for running a cluster of nodes
+- `Dockerfile`: Building the auth-node container
+- `Dockerfile.client`: Building the auth-client container
 - `.gitignore`: Specifies files and directories to be excluded from version control
 - `LICENSE`: MIT license file
 
@@ -231,4 +233,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 
 
-generate proto: `protoc --proto_path=. --go_out=paths=source_relative:. --go-grpc_out=paths=source_relative:. protoc/transaction.proto`
+generate proto:
+```bash
+protoc --proto_path=. --go_out=paths=source_relative:. --go-grpc_out=paths=source_relative:. protoc/transaction.proto
+```
+
