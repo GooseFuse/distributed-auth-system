@@ -124,11 +124,8 @@ func getData(ctx context.Context, client protoc.TransactionServiceClient, key st
 	// Print the response
 	if resp.Success {
 		log.Printf("Data retrieved successfully: %s\n", resp.Value)
-		// In a real implementation, the response would include the value
-		fmt.Println("Note: This is a simplified example. In a real implementation, the response would include the value.")
 	} else {
-		// Note: In the current implementation, TransactionResponse doesn't have an ErrorMessage field
-		fmt.Println("Failed to retrieve data")
+		log.Printf("Failed to retrieve data: %s\n", resp.ErrorMessage)
 	}
 }
 
@@ -136,49 +133,20 @@ func getData(ctx context.Context, client protoc.TransactionServiceClient, key st
 func authenticateUser(ctx context.Context, client protoc.TransactionServiceClient, username, password string) {
 	fmt.Printf("Authenticating user: %s\n", username)
 
-	// In a real implementation, we would have a separate AuthService
-	// For this example, we'll use the HandleTransaction RPC with a special key format
-	// to indicate an authentication operation
-	authKey := fmt.Sprintf("auth:%s", username)
-
-	// Store the password hash (in a real implementation, this would be done during user registration)
-	storeReq := &protoc.TransactionRequest{
-		Transaction: &protoc.Transaction{
-			Key:   authKey,
-			Value: password, // In a real implementation, this would be a password hash
-		},
+	authReq := &protoc.AuthRequest{
+		User: username,
+		Pass: password,
 	}
 
-	storeResp, err := client.HandleTransaction(ctx, storeReq)
-	if err != nil {
-		log.Fatalf("Failed to store authentication data: %v", err)
-	}
-
-	if !storeResp.Success {
-		// Note: In the current implementation, TransactionResponse doesn't have an ErrorMessage field
-		fmt.Println("Failed to store authentication data")
-		return
-	}
-
-	// Simulate authentication by checking if the stored password matches
-	// In a real implementation, this would be a separate Login RPC
-	authReq := &protoc.TransactionRequest{
-		Transaction: &protoc.Transaction{
-			Key:   authKey,
-			Value: password,
-		},
-	}
-
-	authResp, err := client.HandleTransaction(ctx, authReq)
+	authResp, err := client.Auth(ctx, authReq)
 	if err != nil {
 		log.Fatalf("Failed to authenticate: %v", err)
 	}
 
-	if authResp.Success {
-		fmt.Println("Authentication successful")
-		fmt.Println("Note: This is a simplified example. In a real implementation, the response would include an authentication token.")
-	} else {
-		// Note: In the current implementation, TransactionResponse doesn't have an ErrorMessage field
-		fmt.Println("Authentication failed")
+	if !authResp.Success {
+		log.Println("Failed to authenticate")
+		return
 	}
+
+	log.Println("Authentication successful")
 }

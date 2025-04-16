@@ -13,8 +13,10 @@ import (
 	"github.com/GooseFuse/distributed-auth-system/system/datastore"
 	"github.com/willf/bloom"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
 )
 
 // TransactionService defines the gRPC service for handling transactions
@@ -255,9 +257,54 @@ func mightContainKey(filterData []byte, key string) bool {
 }
 
 func (s *TransactionService) Get(ctx context.Context, req *protoc.GetRequest) (*protoc.GetResponse, error) {
-	return &protoc.GetResponse{}, nil
+	// Log the transaction
+	log.Printf("Received GetRequest: User=%s", req.User)
+
+	// Validate the request
+	if req.GetUser() == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "user is required")
+	}
+
+	// Fetch from your underlying store
+	value, err := s.dataStore.GetData(req.GetUser())
+	if err != nil {
+		log.Printf("store get error: %v", err)
+		return nil, status.Errorf(codes.Internal, "store get error: %v", err)
+	}
+
+	log.Printf("GetResponse: Value=%s", value)
+	// Return the value (even if not found, value can be empty)
+	return &protoc.GetResponse{
+		Value:   value,
+		Success: true,
+	}, nil
 }
 
 func (s *TransactionService) Auth(ctx context.Context, req *protoc.AuthRequest) (*protoc.AuthResponse, error) {
-	return &protoc.AuthResponse{}, nil
+	log.Printf("Received AuthRequest: User=%s Pass:%s", req.User, req.Pass)
+
+	// Validate the request
+	if req.GetUser() == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "User is required")
+	}
+	if req.GetPass() == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "Pass is required")
+	}
+
+	// Fetch from your underlying store
+	value, err := s.dataStore.GetData(req.GetUser())
+	if err != nil {
+		log.Printf("store get error: %v", err)
+		return nil, status.Errorf(codes.Internal, "store get error: %v", err)
+	}
+
+	if value != req.GetPass() {
+		log.Printf("Auth failed")
+		return &protoc.AuthResponse{Success: false, ErrorMessage: "Invalid credentials"}, nil
+	}
+
+	log.Printf("Auth success")
+	return &protoc.AuthResponse{
+		Success: true,
+	}, nil
 }

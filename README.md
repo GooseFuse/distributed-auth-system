@@ -207,6 +207,11 @@ isValid := securityManager.VerifySignature(data, signature, publicKey)
 3. Add tests for the new feature
 4. Update documentation
 
+### Regenerating proto
+```bash
+protoc --proto_path=. --go_out=paths=source_relative:. --go-grpc_out=paths=source_relative:. protoc/transaction.proto
+```
+
 ### Version Control
 
 The project includes a `.gitignore` file that excludes the following from version control:
@@ -230,11 +235,3 @@ This ensures that only the source code and necessary configuration files are com
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-
-
-generate proto:
-```bash
-protoc --proto_path=. --go_out=paths=source_relative:. --go-grpc_out=paths=source_relative:. protoc/transaction.proto
-```
-
